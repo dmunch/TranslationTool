@@ -14,7 +14,7 @@ namespace TranslationTool
         Dictionary<string, string> masterDict;
         Dictionary<string, Dictionary<string, string>> dicts;
 
-        protected IEnumerable<string> Languages;
+        public IEnumerable<string> Languages;
         protected string masterLanguage;
         protected string project;
         
@@ -136,15 +136,26 @@ namespace TranslationTool
         public void ToCSV(string targetDir)
         {
             StringBuilder sb = new StringBuilder();
+            ToCSV(sb, true);
 
-            sb.Append("").Append("en").Append(";");
-            foreach (var l in Languages)
+            using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project + ".csv", false, Encoding.UTF8))
             {
-                sb.Append(l);
-                sb.Append(";");
+                outfile.Write(sb.ToString());
             }
-            sb.AppendLine();
+        }
 
+        public void ToCSV(StringBuilder sb, bool addHeader = true)
+        {
+            if (addHeader)
+            {
+                sb.Append("").Append("en").Append(";");
+                foreach (var l in Languages)
+                {
+                    sb.Append(l);
+                    sb.Append(";");
+                }
+                sb.AppendLine();
+            }
             foreach (var kvp in masterDict)
             {
                 sb.Append(kvp.Key).Append(";");
@@ -157,10 +168,49 @@ namespace TranslationTool
 
                 sb.AppendLine();
             }
-            using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project + ".csv", false, Encoding.UTF8))
+        }
+
+        public void ToXLS(string fileName)
+        {
+            FileInfo newFile = new FileInfo(fileName);
+            if (newFile.Exists)
             {
-                outfile.Write(sb.ToString());
+                newFile.Delete();  // ensures we create a new workbook
+                newFile = new FileInfo(fileName);
             }
+            using (var package = new OfficeOpenXml.ExcelPackage(newFile))
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Traductions");
+                ToXLS(worksheet, 1);
+
+                package.Save();
+            }
+        }
+
+        public int ToXLS(OfficeOpenXml.ExcelWorksheet worksheet, int rowStart = 1)
+        {
+            int columnCounter = 2;
+            int rowCounter = rowStart;
+
+            if (rowStart == 1) //write header
+            {
+                worksheet.Cells[rowStart, 1].Value = "";            
+                foreach (var l in Languages)
+                    worksheet.Cells[rowStart, columnCounter++].Value = l;
+                rowCounter++;
+            }
+
+            foreach (var kvp in masterDict)
+            {                
+                columnCounter = 2;
+                worksheet.Cells[rowCounter, 1].Value = kvp.Key;
+
+                foreach (var l in Languages)
+                    worksheet.Cells[rowCounter, columnCounter++].Value = dicts.ContainsKey(l) ? dicts[l].ContainsKey(kvp.Key) ? dicts[l][kvp.Key] : "" : "";
+                rowCounter++;
+            }
+
+            return rowCounter;
         }
 
         public void Print()
