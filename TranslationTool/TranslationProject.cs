@@ -15,7 +15,7 @@ namespace TranslationTool
         Dictionary<string, Dictionary<string, string>> dicts;
 
         public IEnumerable<string> Languages;
-        protected string masterLanguage;
+        public string masterLanguage;
         protected string project;
         
         public TranslationProject(string project)
@@ -189,12 +189,13 @@ namespace TranslationTool
 
         public int ToXLS(OfficeOpenXml.ExcelWorksheet worksheet, int rowStart = 1)
         {
-            int columnCounter = 2;
+            int columnCounter = 1;
             int rowCounter = rowStart;
 
             if (rowStart == 1) //write header
             {
-                worksheet.Cells[rowStart, 1].Value = "";            
+                worksheet.Cells[rowStart, columnCounter++].Value = "";
+                worksheet.Cells[rowStart, columnCounter++].Value = masterLanguage;
                 foreach (var l in Languages)
                     worksheet.Cells[rowStart, columnCounter++].Value = l;
                 rowCounter++;
@@ -202,9 +203,9 @@ namespace TranslationTool
 
             foreach (var kvp in masterDict)
             {                
-                columnCounter = 2;
-                worksheet.Cells[rowCounter, 1].Value = kvp.Key;
-
+                columnCounter = 1;
+                worksheet.Cells[rowCounter, columnCounter++].Value = kvp.Key;
+                worksheet.Cells[rowCounter, columnCounter++].Value = kvp.Value; //write master language
                 foreach (var l in Languages)
                     worksheet.Cells[rowCounter, columnCounter++].Value = dicts.ContainsKey(l) ? dicts[l].ContainsKey(kvp.Key) ? dicts[l][kvp.Key] : "" : "";
                 rowCounter++;

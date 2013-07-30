@@ -24,7 +24,7 @@ namespace TranslationTool
                 Projects.Add(pName, TranslationProject.FromResX(this.Directory, pName));
 
         }
-
+        
         public void ToCSV(string targetDir)
         {
             StringBuilder sb = new StringBuilder();
@@ -54,6 +54,7 @@ namespace TranslationTool
                 newFile.Delete();  // ensures we create a new workbook
                 newFile = new FileInfo(targetDir + fileName);
             }
+
             using (var package = new OfficeOpenXml.ExcelPackage(newFile))
             {
                 var worksheet = package.Workbook.Worksheets.Add("Traductions");
@@ -61,6 +62,8 @@ namespace TranslationTool
                 //write header
                 int columnCount = 1;
                 worksheet.Cells[1, columnCount++].Value = "";
+                worksheet.Cells[1, columnCount++].Value = Projects.First().Value.masterLanguage;
+
                 foreach (var l in Projects.First().Value.Languages)
                     worksheet.Cells[1, columnCount++].Value = l;
 
