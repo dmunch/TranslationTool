@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TMX14\tmx14.cs" />
     <Compile Include="TranslationProject.cs" />
     <Compile Include="TranslationProjectCollection.cs" />
   </ItemGroup>
