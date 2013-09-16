@@ -12,19 +12,43 @@ namespace TranslationTool
         Dictionary<string, TranslationProject> Projects;
         string Directory;
 
-
-        public TranslationProjectCollection(IEnumerable<string> projectNames, string directory)
+        protected TranslationProjectCollection()
         {
-            this.ProjectNames = projectNames;
-            this.Directory = directory;
-
-            Projects = new Dictionary<string,TranslationProject>();
-
-            foreach(var pName in this.ProjectNames)
-                Projects.Add(pName, TranslationProject.FromResX(this.Directory, pName));
-
+            this.Projects = new Dictionary<string, TranslationProject>();
         }
         
+        public static TranslationProjectCollection FromResX(IEnumerable<string> projectNames, string directory)
+        {
+            var tpc = new TranslationProjectCollection();
+
+            tpc.ProjectNames = projectNames;
+            tpc.Directory = directory;
+
+            foreach (var pName in tpc.ProjectNames)
+                tpc.Projects.Add(pName, TranslationProject.FromResX(tpc.Directory, pName));
+
+            return tpc;
+        }
+
+        public static TranslationProjectCollection FromCSV(IEnumerable<string> projectNames, string fileName)
+        {
+            var tpc = new TranslationProjectCollection();
+
+            tpc.ProjectNames = projectNames;            
+            
+
+            foreach (var pName in tpc.ProjectNames)
+                tpc.Projects.Add(pName, TranslationProject.FromCSV(fileName, pName));
+
+            return tpc;
+        }
+
+        public void ToResX(string targetDir)
+        {
+            foreach (var tp in Projects)
+                tp.Value.ToResX(targetDir);
+        }
+
         public void ToCSV(string targetDir)
         {
             StringBuilder sb = new StringBuilder();
@@ -79,6 +103,13 @@ namespace TranslationTool
                 package.Save();
             }
 
+        }
+
+        public void SyncWith(TranslationProjectCollection tpc)
+        {
+            foreach (var tp in Projects)
+                if(tpc.Projects.ContainsKey(tp.Key))
+                    tp.Value.SyncWith(tpc.Projects[tp.Key]);
         }
     }
 }

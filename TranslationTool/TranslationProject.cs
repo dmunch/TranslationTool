@@ -6,6 +6,8 @@ using System.Resources;
 using System.Collections;
 using System.IO;
 using LumenWorks.Framework.IO.Csv;
+using System.Xml.Serialization;
+using System.Xml;
 
 namespace TranslationTool
 {
@@ -18,20 +20,24 @@ namespace TranslationTool
         public string masterLanguage;
         protected string project;
         
-        public TranslationProject(string project)
+        public TranslationProject(string project) : this(project, new string[] { "de", "es", "fr", "it", "nl" })
         {
-            Languages = new string[] { "de", "es", "fr", "it", "nl" };
-            dicts = new Dictionary<string, Dictionary<string, string>>();
-            masterLanguage = "en";
-        
-            this.project = project;
         }
 
+        public TranslationProject(string project, string[] languages)
+        {
+            this.Languages = languages;
+            dicts = new Dictionary<string, Dictionary<string, string>>();
+            masterLanguage = "en";
+
+            this.project = project;
+        }
+      
         public static TranslationProject FromCSV(string file, string project)
         {
             // open the file "data.csv" which is a CSV file with headers
             var dicts = new Dictionary<string, Dictionary<string, string>>();
-
+            List<string> languages = new List<string>();
 
             using (CsvReader csv =
                    new CsvReader(new StreamReader(file), true))
@@ -40,8 +46,13 @@ namespace TranslationTool
                 string currentNS = "";
 
                 string[] headers = csv.GetFieldHeaders();
+
                 for (int c = 1; c < headers.Length; c++)
-                    dicts.Add(headers[c].ToLower(), new Dictionary<string, string>());
+                {
+                    string language = headers[c].ToLower();
+                    dicts.Add(language, new Dictionary<string, string>());
+                    languages.Add(language);
+                }
 
                 while (csv.ReadNextRecord())
                 {
@@ -57,7 +68,8 @@ namespace TranslationTool
 
             }
 
-            var tp = new TranslationProject(project);
+            languages.Remove("en");
+            var tp = new TranslationProject(project, languages.ToArray());
             tp.masterDict = dicts[tp.masterLanguage];
             dicts.Remove(tp.masterLanguage);
             tp.dicts = dicts;
@@ -214,9 +226,130 @@ namespace TranslationTool
             return rowCounter;
         }
 
+        public void ToArb(string targetDir)
+        {
+            StringBuilder sb = new StringBuilder();
+            
+            sb = ToArb(targetDir, project, masterLanguage, masterDict);
+            foreach(var l in Languages)
+                if(dicts.ContainsKey(l))
+                    sb = ToArb(targetDir, project, l, dicts[l]);
+            /*
+             using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project + ".arb", false, Encoding.UTF8))
+            {
+                outfile.Write(sb.ToString());
+            }*/
+        }
+        public void ToArbAll(string targetDir)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb = ToArb(sb, project, masterLanguage, masterDict);
+            foreach (var l in Languages)
+                if (dicts.ContainsKey(l))
+                    sb = ToArb(sb, project, l, dicts[l]);
+            
+             using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project + ".arb", false, Encoding.UTF8))
+            {
+                outfile.Write(sb.ToString());
+            }
+        }
+        public StringBuilder ToArb(string targetDir, string project, string language, Dictionary<string, string> dict)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb = ToArb(sb, project, language, dict);
+            using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project + "." + language + ".arb", false, Encoding.UTF8))
+            {
+                outfile.Write(sb.ToString());
+            }
+
+            return sb;
+        }
+        
+        public static StringBuilder ToArb(StringBuilder sb, string project, string language, Dictionary<string, string> dict)
+        {
+            string newLine = "";
+            sb.Append("arb.register(\"arb_ref_app\",{").Append(newLine);
+            sb.Append("\"@@locale\":\"").Append(language).Append("\",").Append(newLine);
+            sb.Append("\"@@context\":\"").Append(project).Append("\",").Append(newLine);        
+
+            foreach(var kvp in dict)
+            {
+                sb.Append("\"").Append(kvp.Key).Append("\":\"").Append(kvp.Value).Append("\",").Append(newLine);
+            }
+            sb.Remove(sb.Length - 1, 1).Append(newLine); //remove trailing ,
+            sb.Append("});").Append(newLine).Append(newLine);
+
+            return sb;
+        }
+
+        public void toTMX(string targetDir)
+        {
+            var tmx = new tmx();
+            var tus = new List<tu>();
+          
+            foreach (var kvp in masterDict)
+            {
+                var tu = new tu();
+                tu.tuid = kvp.Key;
+
+                var tuvs = new List<tuv>();
+                tuvs.Add(new tuv() { lang = masterLanguage.ToUpper(), lang1 = masterLanguage.ToUpper(), seg = new seg() { Text = new string[] { kvp.Value } } });
+
+                foreach (var l in Languages)
+                {                         
+                    if(dicts.ContainsKey(l) && dicts[l].ContainsKey(kvp.Key))
+                        tuvs.Add(new tuv() { lang = l.ToUpper(), lang1 = l.ToUpper(), seg = new seg() { Text = new string[] { dicts[l][kvp.Key] } } });
+                }
+
+                tu.tuv = tuvs.ToArray();
+                tus.Add(tu);
+            }
+            
+            tmx.body = tus.ToArray();
+            tmx.header = new header() { srclang = "*all*", creationtool = "iLuccaTranslationTool", segtype = headerSegtype.phrase };
+
+            var extraTypes = new Type[] { typeof(tu), typeof(tuv), typeof(seg) }; 
+            XmlSerializer xs = new XmlSerializer(typeof(tmx), null, extraTypes, new XmlRootAttribute("tmx"), null);
+
+			//specify encoding to add BOM
+            using (var sw = new StreamWriter(targetDir + @"\" + project + ".tmx", false, new UTF8Encoding(false)))
+            {
+                XmlWriterSettings settings = new XmlWriterSettings();
+                settings.Indent = false;
+                settings.NewLineHandling = NewLineHandling.None;
+                //xs.Serialize(sw, tmx);
+
+                using (XmlWriter writer = XmlWriter.Create(sw, settings))
+                {
+                    xs.Serialize(writer, tmx);
+                    //_serializer.Serialize(o, writer);
+                }
+            }
+        }
+        
         public void Print()
         {
 
+        }
+        
+        public void RemoveEmptyKeys()
+        {
+            foreach (var l in Languages)
+            {
+                if(!dicts.ContainsKey(l)) continue;
+                
+
+                List<string> keysToRemove = new List<string>();
+
+                foreach (var kvp in dicts[l])
+                    if (string.IsNullOrWhiteSpace(kvp.Value.Trim()))
+                        keysToRemove.Add(kvp.Key);
+
+                foreach (var key in keysToRemove)
+                    dicts[l].Remove(key);
+            }
         }
 
         public Dictionary<string, Sync> SyncWith(TranslationProject tp)
@@ -247,14 +380,17 @@ namespace TranslationTool
            // List<string> synced = new List<string>();
             var toSync = new Sync();
 
+            
             foreach (var kvp in d1)
             {
-                if (d2.ContainsKey(kvp.Key) && kvp.Value != d2[kvp.Key])
+                if (d2.ContainsKey(kvp.Key) && kvp.Value != d2[kvp.Key] && d2[kvp.Key].Trim() != "")
                 {
                     toSync.Updated.Add(kvp.Key, d2[kvp.Key]);
                     toSync.Orig.Add(kvp.Key, kvp.Value);
                 }
             }
+
+            //don't add new keys            
             foreach (var kvp in d2)
             {
                 if (!d1.ContainsKey(kvp.Key))
@@ -263,12 +399,11 @@ namespace TranslationTool
                     toSync.New.Add(kvp.Key, kvp.Value);
                 }
             }
-
+            
+            
             foreach (var kvp in toSync.Updated)
                 d1[kvp.Key] = kvp.Value;
-                    
-            
-            
+                                            
             return toSync;
         }
 
