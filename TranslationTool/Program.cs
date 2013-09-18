@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.IO;
 
+using TranslationTool.IO;
+
 namespace TranslationTool
 {
     class Program
@@ -21,11 +23,11 @@ namespace TranslationTool
             //TMXTest(@"..\..\TMX14\test.tmx");
 
             //string csvFile = @"D:\Users\login\Documents\i18n\Figgo - traductions.csv";
-            var tp = TranslationProject.FromCSV(csvFileGdocs, "WFIGGO");
-            tp.ToXLS(targetDir + @"\WFIGGO.xlsx");
-            tp.ToArb(targetDir);
-            tp.ToArbAll(targetDir);
-            tp.toTMX(targetDir);
+            var tp = CSV.FromCSV(csvFileGdocs, "WFIGGO");
+            Xls.ToXLS(tp, targetDir + @"\WFIGGO.xlsx");
+            Arb.ToArb(tp, targetDir);
+            Arb.ToArbAll(tp, targetDir);
+            TMX.ToTMX(tp, targetDir);
 
             //SyncProject("WFIGGOMAIL");
             SyncProject("WFIGGO");
@@ -47,20 +49,20 @@ namespace TranslationTool
         static void Cleemy()
         {
             string fileGDocs = @"D:\Users\login\Downloads\Cleemy - Invités Externes - Sheet1.csv";
-            var tp = TranslationProject.FromCSV(fileGDocs, "WEXPENSESExternalAttendees");
+            var tp = CSV.FromCSV(fileGDocs, "WEXPENSESExternalAttendees");
             tp.RemoveEmptyKeys();
-            tp.ToResX(directory);
+            ResX.ToResX(tp, directory);
         }
 
         static void SyncProject(string project)
         {
-            var tpCurrent = TranslationProject.FromResX(directory, project);
-            var tpNew = TranslationProject.FromCSV(csvFileGdocs, project);
+            var tpCurrent = ResX.FromResX(directory, project);
+            var tpNew = CSV.FromCSV(csvFileGdocs, project);
             //tp.ToResX(targetDir);
             var allSync = tpCurrent.SyncWith(tpNew);
 
             tpCurrent.RemoveEmptyKeys();
-            tpCurrent.ToResX(targetDir);
+			ResX.ToResX(tpCurrent, targetDir);
 
             var sw = new System.IO.StreamWriter(targetDir + @"\" + project + "resume.txt", false);
             allSync["en"].Print("en", sw);

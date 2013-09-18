@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using TranslationTool.IO;
 
 namespace TranslationTool
 {
@@ -25,7 +26,7 @@ namespace TranslationTool
             tpc.Directory = directory;
 
             foreach (var pName in tpc.ProjectNames)
-                tpc.Projects.Add(pName, TranslationProject.FromResX(tpc.Directory, pName));
+                tpc.Projects.Add(pName, ResX.FromResX(tpc.Directory, pName));
 
             return tpc;
         }
@@ -38,7 +39,7 @@ namespace TranslationTool
             
 
             foreach (var pName in tpc.ProjectNames)
-                tpc.Projects.Add(pName, TranslationProject.FromCSV(fileName, pName));
+                tpc.Projects.Add(pName, CSV.FromCSV(fileName, pName));
 
             return tpc;
         }
@@ -46,7 +47,7 @@ namespace TranslationTool
         public void ToResX(string targetDir)
         {
             foreach (var tp in Projects)
-                tp.Value.ToResX(targetDir);
+				ResX.ToResX(tp.Value, targetDir);
         }
 
         public void ToCSV(string targetDir)
@@ -56,8 +57,8 @@ namespace TranslationTool
             foreach (var kvp in Projects)
             {
                 sb.Append("ns:").AppendLine(kvp.Key);
-                kvp.Value.ToCSV(sb, false);
-
+                CSV.ToCSV(kvp.Value, sb, false);
+				
                 fileName += "_" + kvp.Key;
             }
             
@@ -97,7 +98,7 @@ namespace TranslationTool
                     worksheet.Cells[rowCount, 1].Value = "ns:" + kvp.Key;
                     rowCount++;
 
-                    rowCount = kvp.Value.ToXLS(worksheet, rowCount);
+                    rowCount = Xls.ToXLS(kvp.Value, worksheet, rowCount);
                 }
                 
                 package.Save();
