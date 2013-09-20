@@ -7,7 +7,7 @@ namespace TranslationTool.IO
 {
 	public class CSV
 	{
-		public static TranslationProject FromCSV(string file, string project)
+		public static TranslationProject FromCSV(string file, string project, string masterLanguage)
 		{
 			// open the file "data.csv" which is a CSV file with headers
 			var dicts = new Dictionary<string, Dictionary<string, string>>();
@@ -42,12 +42,9 @@ namespace TranslationTool.IO
 
 			}
 
-			languages.Remove("en");
-			var tp = new TranslationProject(project, languages.ToArray());
-			tp.masterDict = dicts[tp.masterLanguage];
-			dicts.Remove(tp.masterLanguage);
-			tp.dicts = dicts;
-
+			var tp = new TranslationProject(project, masterLanguage, languages.ToArray());
+			tp.Dicts = dicts;
+			
 			return tp;
 		}
 
@@ -56,7 +53,7 @@ namespace TranslationTool.IO
 			StringBuilder sb = new StringBuilder();
 			ToCSV(project, sb, true);
 
-			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project.project + ".csv", false, Encoding.UTF8))
+			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project.Project + ".csv", false, Encoding.UTF8))
 			{
 				outfile.Write(sb.ToString());
 			}
@@ -74,13 +71,13 @@ namespace TranslationTool.IO
 				}
 				sb.AppendLine();
 			}
-			foreach (var kvp in project.masterDict)
+			foreach (var key in project.Keys)
 			{
-				sb.Append(kvp.Key).Append(";");
+				sb.Append(key).Append(";");
 				foreach (var l in project.Languages)
 				{
 					sb.Append("'");
-					sb.Append(project.dicts[l].ContainsKey(kvp.Key) ? project.dicts[l][kvp.Key] : "");
+					sb.Append(project.Dicts[l].ContainsKey(key) ? project.Dicts[l][key] : "");
 					sb.Append("';");
 				}
 

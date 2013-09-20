@@ -10,10 +10,9 @@ namespace TranslationTool.IO
 		{
 			StringBuilder sb = new StringBuilder();
 
-			sb = ToArb(targetDir, tp.project, tp.masterLanguage, tp.masterDict);
 			foreach (var l in tp.Languages)
-				if (tp.dicts.ContainsKey(l))
-					sb = ToArb(targetDir, tp.project, l, tp.dicts[l]);
+				if (tp.Dicts.ContainsKey(l))
+					sb = ToArb(targetDir, tp.Project, l, tp.Dicts[l]);
 			/*
 			 using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project + ".arb", false, Encoding.UTF8))
 			{
@@ -24,13 +23,12 @@ namespace TranslationTool.IO
 		public static void ToArbAll(TranslationProject tp, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
-
-			sb = ToArb(sb, tp.project, tp.masterLanguage, tp.masterDict);
+		
 			foreach (var l in tp.Languages)
-				if (tp.dicts.ContainsKey(l))
-					sb = ToArb(sb, tp.project, l, tp.dicts[l]);
+				if (tp.Dicts.ContainsKey(l))
+					sb = ToArb(sb, tp.Project, l, tp.Dicts[l]);
 
-			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + tp.project + ".arb", false, Encoding.UTF8))
+			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + tp.Project + ".arb", false, Encoding.UTF8))
 			{
 				outfile.Write(sb.ToString());
 			}

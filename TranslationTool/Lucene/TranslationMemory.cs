@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+
 using System.Collections.Generic;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
@@ -76,14 +78,14 @@ namespace TranslationTool.Memory
 			mlt.SetFieldNames(new string[] { lang });
 			mlt.MinTermFreq = 1;
 			mlt.MinDocFreq = 1;
-
+			
 			var reader = new System.IO.StringReader(searchText);
 			var query = mlt.Like(reader);
 			var results = new List<string>();
 
 			using (var searcher = new IndexSearcher(dir, true))
 			{
-				var topDocs = searcher.Search(query, 10);
+				var topDocs = searcher.Search(query, 1000);
 				foreach (var scoreDoc in topDocs.ScoreDocs)
 				{
 					Document doc = searcher.Doc(scoreDoc.Doc);
@@ -92,22 +94,23 @@ namespace TranslationTool.Memory
 					results.Add(doc.Get(lang));
 				}
 			}
+			var g = results.GroupBy(s => s);
+
 			return results;
 		}
 
 		private static void IndexDocument(IndexWriter writer, TranslationProject tp)
 		{
-			foreach (var key in tp.masterDict.Keys)
+			foreach (var key in tp.Keys)
 			{
 				Document doc = new Document();
 
 				doc.Add(new Field("key", key, Field.Store.YES, Field.Index.NOT_ANALYZED));
-				doc.Add(new Field(tp.masterLanguage, tp.masterDict[key], Field.Store.YES, Field.Index.NOT_ANALYZED));
 
 				foreach (var lang in tp.Languages)
 				{ 
-					if(tp.dicts[lang].ContainsKey(key))
-						doc.Add(new Field(lang, tp.dicts[lang][key], Field.Store.YES, Field.Index.ANALYZED));
+					if(tp.Dicts[lang].ContainsKey(key))
+						doc.Add(new Field(lang, tp.Dicts[lang][key], Field.Store.YES, Field.Index.ANALYZED));
 				}
 
 				writer.AddDocument(doc);

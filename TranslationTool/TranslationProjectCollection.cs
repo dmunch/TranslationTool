@@ -18,7 +18,7 @@ namespace TranslationTool
             this.Projects = new Dictionary<string, TranslationProject>();
         }
         
-        public static TranslationProjectCollection FromResX(IEnumerable<string> projectNames, string directory)
+        public static TranslationProjectCollection FromResX(IEnumerable<string> projectNames, string directory, string masterLanguage)
         {
             var tpc = new TranslationProjectCollection();
 
@@ -26,12 +26,12 @@ namespace TranslationTool
             tpc.Directory = directory;
 
             foreach (var pName in tpc.ProjectNames)
-                tpc.Projects.Add(pName, ResX.FromResX(tpc.Directory, pName));
+                tpc.Projects.Add(pName, ResX.FromResX(tpc.Directory, pName, masterLanguage));
 
             return tpc;
         }
 
-        public static TranslationProjectCollection FromCSV(IEnumerable<string> projectNames, string fileName)
+        public static TranslationProjectCollection FromCSV(IEnumerable<string> projectNames, string fileName, string masterLanguage)
         {
             var tpc = new TranslationProjectCollection();
 
@@ -39,7 +39,7 @@ namespace TranslationTool
             
 
             foreach (var pName in tpc.ProjectNames)
-                tpc.Projects.Add(pName, CSV.FromCSV(fileName, pName));
+				tpc.Projects.Add(pName, CSV.FromCSV(fileName, pName, masterLanguage));
 
             return tpc;
         }
@@ -87,7 +87,7 @@ namespace TranslationTool
                 //write header
                 int columnCount = 1;
                 worksheet.Cells[1, columnCount++].Value = "";
-                worksheet.Cells[1, columnCount++].Value = Projects.First().Value.masterLanguage;
+                worksheet.Cells[1, columnCount++].Value = Projects.First().Value.MasterLanguage;
 
                 foreach (var l in Projects.First().Value.Languages)
                     worksheet.Cells[1, columnCount++].Value = l;

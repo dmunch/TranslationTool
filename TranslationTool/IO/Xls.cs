@@ -29,19 +29,19 @@ namespace TranslationTool.IO
 			if (rowStart == 1) //write header
 			{
 				worksheet.Cells[rowStart, columnCounter++].Value = "";
-				worksheet.Cells[rowStart, columnCounter++].Value = project.masterLanguage;
+
 				foreach (var l in project.Languages)
 					worksheet.Cells[rowStart, columnCounter++].Value = l;
 				rowCounter++;
 			}
 
-			foreach (var kvp in project.masterDict)
+			foreach (var key in project.Keys)
 			{
 				columnCounter = 1;
-				worksheet.Cells[rowCounter, columnCounter++].Value = kvp.Key;
-				worksheet.Cells[rowCounter, columnCounter++].Value = kvp.Value; //write master language
+				worksheet.Cells[rowCounter, columnCounter++].Value = key;
+				
 				foreach (var l in project.Languages)
-					worksheet.Cells[rowCounter, columnCounter++].Value = project.dicts.ContainsKey(l) ? project.dicts[l].ContainsKey(kvp.Key) ? project.dicts[l][kvp.Key] : "" : "";
+					worksheet.Cells[rowCounter, columnCounter++].Value = project.Dicts.ContainsKey(l) ? project.Dicts[l].ContainsKey(key) ? project.Dicts[l][key] : "" : "";
 				rowCounter++;
 			}
 

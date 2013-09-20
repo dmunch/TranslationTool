@@ -15,23 +15,30 @@ namespace TranslationTool
 
         static string allCsvFileGdocs = @"D:\Users\login\Downloads\_WFIGGO_FIACCUEIL_FICOMMON - Traductions.csv";
 
+		static string figgoBugsCsv = @"D:\Users\login\Downloads\WFIGGO_BUGS - Traductions.csv";
+
         static void Main(string[] args)
         {
-            Cleemy();
-            return;
+			TranslationMemory();
+
+            //Cleemy();
+            //return;
 
             //TMXTest(@"..\..\TMX14\test.tmx");
+			//SyncProject("WFIGGOMAIL");
+			//SyncProject("WFIGGO", csvFileGdocs, targetDir);
+			SyncProject("WFIGGO", figgoBugsCsv, directory);
 
+			return;
+			
             //string csvFile = @"D:\Users\login\Documents\i18n\Figgo - traductions.csv";
-            var tp = CSV.FromCSV(csvFileGdocs, "WFIGGO");
+            var tp = CSV.FromCSV(csvFileGdocs, "WFIGGO", "en");
             Xls.ToXLS(tp, targetDir + @"\WFIGGO.xlsx");
             Arb.ToArb(tp, targetDir);
             Arb.ToArbAll(tp, targetDir);
             TMX.ToTMX(tp, targetDir);
 
-            //SyncProject("WFIGGOMAIL");
-            SyncProject("WFIGGO");
-
+           
             /*
             var pc = TranslationProjectCollection.FromResX(new string[] { "WFIGGO", "FIACCUEIL", "FICOMMON" }, directory);
             //pc.ToCSV(targetDir);
@@ -46,18 +53,27 @@ namespace TranslationTool
             Console.ReadLine();
         }
 
+		static void TranslationMemory()
+		{
+			var tp = CSV.FromCSV(csvFileGdocs, "WFIGGO", "en");
+			var tpc = TranslationProjectCollection.FromResX(new string[] { "WFIGGO", "FIACCUEIL", "FICOMMON" }, directory, "en");
+
+			var memory = new Memory.TranslationMemory(tpc);
+			memory.Query("fr", "annuller demande");
+		}
+
         static void Cleemy()
         {
             string fileGDocs = @"D:\Users\login\Downloads\Cleemy - Invités Externes - Sheet1.csv";
-            var tp = CSV.FromCSV(fileGDocs, "WEXPENSESExternalAttendees");
+			var tp = CSV.FromCSV(fileGDocs, "WEXPENSESExternalAttendees", "en");
             tp.RemoveEmptyKeys();
             ResX.ToResX(tp, directory);
         }
 
-        static void SyncProject(string project)
+        static void SyncProject(string project, string csvFile, string targetDir)
         {
-            var tpCurrent = ResX.FromResX(directory, project);
-            var tpNew = CSV.FromCSV(csvFileGdocs, project);
+            var tpCurrent = ResX.FromResX(directory, project, "en");
+            var tpNew = CSV.FromCSV(csvFile, project, "en");
             //tp.ToResX(targetDir);
             var allSync = tpCurrent.SyncWith(tpNew);
 

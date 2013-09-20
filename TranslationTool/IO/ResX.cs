@@ -6,17 +6,20 @@ namespace TranslationTool.IO
 {
 	public class ResX
 	{
-		public static TranslationProject FromResX(string dir, string project)
+		public static TranslationProject FromResX(string dir, string project, string masterLanguage)
 		{
-			var tp = new TranslationProject(project);
+			var tp = new TranslationProject(project, masterLanguage);
 
-			tp.masterDict = GetDictFromResX(dir + project + ".resx");
+			tp.Dicts.Add(masterLanguage, GetDictFromResX(dir + project + ".resx"));
 
 			foreach (var l in tp.Languages)
 			{
+				if (l == masterLanguage) continue; //we skip master language since we treated it already as a special case
+
 				var file = dir + project + "." + l + ".resx";
-				tp.dicts.Add(l, GetDictFromResX(file));
+				tp.Dicts.Add(l, GetDictFromResX(file));
 			}
+			
 			return tp;
 		}
 
@@ -36,16 +39,18 @@ namespace TranslationTool.IO
 
 		public static void ToResX(TranslationProject tp, string targetDir)
 		{
-			ToResX(tp.masterDict, targetDir + tp.project + ".resx");
+			ToResX(tp.Dicts[tp.MasterLanguage], targetDir + tp.Project + ".resx");
 			foreach (var l in tp.Languages)
 			{
-				Dictionary<string, string> dict;
-				if (tp.dicts.ContainsKey(l))
-					dict = tp.dicts[l];
-				else
-					dict = TranslationProject.EmptyFromTemplate(tp.masterDict);
+				if (l == tp.MasterLanguage) continue; //we skip master language since we treated it already as a special case
 
-				ToResX(dict, targetDir + tp.project + "." + l + ".resx");
+				Dictionary<string, string> dict;
+				if (tp.Dicts.ContainsKey(l))
+					dict = tp.Dicts[l];
+				else
+					dict = TranslationProject.EmptyFromTemplate(tp.Dicts[tp.MasterLanguage]);
+
+				ToResX(dict, targetDir + tp.Project + "." + l + ".resx");
 			}
 		}
 

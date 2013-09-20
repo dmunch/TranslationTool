@@ -6,24 +6,30 @@ namespace TranslationTool
 {
     public class TranslationProject
     {
-        public Dictionary<string, string> masterDict;
-        public Dictionary<string, Dictionary<string, string>> dicts;
-
+        public Dictionary<string, Dictionary<string, string>> Dicts;
+		
         public IEnumerable<string> Languages;
-        public string masterLanguage;
-        public string project;
-        
-        public TranslationProject(string project) : this(project, new string[] { "de", "es", "fr", "it", "nl" })
+		public string MasterLanguage { get; protected set; }
+		public string Project { get; protected set; }
+
+		public IEnumerable<string> Keys
+		{
+			get
+			{
+				return Dicts[MasterLanguage].Keys;
+			}
+		}
+
+        public TranslationProject(string project, string masterLanguage) : this(project, masterLanguage, new string[] { "de", "es", "fr", "it", "nl" })
         {
         }
 
-        public TranslationProject(string project, string[] languages)
+        public TranslationProject(string project, string masterLanguage, string[] languages)
         {
+			this.MasterLanguage = masterLanguage;
             this.Languages = languages;
-            dicts = new Dictionary<string, Dictionary<string, string>>();
-            masterLanguage = "en";
-
-            this.project = project;
+            this.Dicts = new Dictionary<string, Dictionary<string, string>>();            
+            this.Project = project;
         }
                      
         public static Dictionary<string, string> EmptyFromTemplate(Dictionary<string, string> template)
@@ -41,17 +47,17 @@ namespace TranslationTool
         {
             foreach (var l in Languages)
             {
-                if(!dicts.ContainsKey(l)) continue;
+                if(!Dicts.ContainsKey(l)) continue;
                 
 
                 List<string> keysToRemove = new List<string>();
 
-                foreach (var kvp in dicts[l])
+                foreach (var kvp in Dicts[l])
                     if (string.IsNullOrWhiteSpace(kvp.Value.Trim()))
                         keysToRemove.Add(kvp.Key);
 
                 foreach (var key in keysToRemove)
-                    dicts[l].Remove(key);
+                    Dicts[l].Remove(key);
             }
         }
 
@@ -59,13 +65,10 @@ namespace TranslationTool
         {
             var allSync = new Dictionary<string, Sync>();
 
-            allSync.Add(masterLanguage, SyncDicts(masterDict, tp.masterDict));
-            allSync[masterLanguage].Print(masterLanguage);
-
             foreach (var l in Languages)
             {
-                if (!dicts.ContainsKey(l) || !tp.dicts.ContainsKey(l)) continue;
-                allSync.Add(l, SyncDicts(dicts[l], tp.dicts[l]));
+                if (!Dicts.ContainsKey(l) || !tp.Dicts.ContainsKey(l)) continue;
+                allSync.Add(l, SyncDicts(Dicts[l], tp.Dicts[l]));
                 allSync[l].Print(l);
             }
             return allSync;
