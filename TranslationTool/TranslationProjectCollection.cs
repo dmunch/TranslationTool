@@ -10,7 +10,7 @@ namespace TranslationTool
     public class TranslationProjectCollection
     {
         IEnumerable<string> ProjectNames;
-        Dictionary<string, TranslationProject> Projects;
+        public Dictionary<string, TranslationProject> Projects;
         string Directory;
 
         protected TranslationProjectCollection()
