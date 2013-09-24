@@ -11,24 +11,37 @@ using Lucene.Net.Store;
 
 namespace TranslationTool.Memory
 {	
+	public class QueryResult : SegmentSet
+	{
+		public float Score { get; protected set; }
+		public SegmentSet Segments { get; protected set; }
+
+		public QueryResult(string key, IEnumerable<Segment> segments, float score) : base(key, segments)
+		{
+			this.Score = score;		
+		}
+	}
 
 	public class TranslationMemory
 	{
 		protected Lucene.Net.Store.Directory Index;
+		protected TranslationProject TranslationProject;
 
 		public TranslationMemory(TranslationProject tp)
 		{
-			Index = TranslationMemoryHelpers.BuildTranslationProjectIndex(new TranslationProject[] {tp});
+			this.Index = TranslationMemoryHelpers.BuildTranslationProjectIndex(new TranslationProject[] {tp});
+			this.TranslationProject = tp;
 		}
 
 		public TranslationMemory(TranslationProjectCollection tpCollection)
 		{
 			Index = TranslationMemoryHelpers.BuildTranslationProjectIndex(tpCollection.Projects.Values);
+			this.TranslationProject = tpCollection.Projects.First().Value;
 		}
 
-		public IEnumerable<string> Query(string language, string query)
+		public IEnumerable<QueryResult> Query(string language, string query)
 		{
-			return TranslationMemoryHelpers.SearchTranslationProjects(Index, language, query);
+			return TranslationMemoryHelpers.SearchTranslationProjects(Index, language, query, TranslationProject.Languages);
 		}
 	}
 
@@ -48,6 +61,7 @@ namespace TranslationTool.Memory
 					Console.WriteLine(ex);
 				}
 				System.IO.Directory.CreateDirectory(tmpPath);
+
 
 				return tmpPath;
 			}
@@ -71,17 +85,18 @@ namespace TranslationTool.Memory
 			return dir;			
 		}
 
-		public static IEnumerable<string> SearchTranslationProjects(Lucene.Net.Store.Directory dir, string lang, string searchText)
+		public static IEnumerable<QueryResult> SearchTranslationProjects(Lucene.Net.Store.Directory dir, string lang, string searchText, IEnumerable<string> languages)
 		{
 			var ir = IndexReader.Open(dir, true);
 			var mlt = new MoreLikeThis(ir);
 			mlt.SetFieldNames(new string[] { lang });
 			mlt.MinTermFreq = 1;
 			mlt.MinDocFreq = 1;
-			
+			mlt.MinWordLen = 4;
+
 			var reader = new System.IO.StringReader(searchText);
 			var query = mlt.Like(reader);
-			var results = new List<string>();
+			var results = new List<QueryResult>();
 
 			using (var searcher = new IndexSearcher(dir, true))
 			{
@@ -90,11 +105,14 @@ namespace TranslationTool.Memory
 				{
 					Document doc = searcher.Doc(scoreDoc.Doc);
 					float score = scoreDoc.Score;
+					
+					var trads = languages.Select(l => new Segment(l, doc.Get(l)));
+					var set = new SegmentSet(doc.Get("key"), trads);
 
-					results.Add(doc.Get(lang));
+					results.Add(new QueryResult(doc.Get("key"), trads, score));
 				}
 			}
-			var g = results.GroupBy(s => s);
+			//var g = results.GroupBy(s => s);
 
 			return results;
 		}
