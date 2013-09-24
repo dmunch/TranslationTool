@@ -1,9 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace TranslationTool
 {
+	public class Segment
+	{
+		public string Language { get; protected set; }
+		public string Text { get; set; }
+
+		public Segment(string lang, string t)
+		{
+			this.Language = lang;
+			this.Text = t;
+		}
+	}
+
+	public class SegmentSet
+	{
+		public string Key { get; protected set; }
+		public IEnumerable<Segment> Segments { get; protected set; }
+
+		public SegmentSet(string key, IEnumerable<Segment> segments)
+		{
+			this.Key = key;
+			this.Segments = segments;
+		}
+	}
+
     public class TranslationProject
     {
         public Dictionary<string, Dictionary<string, string>> Dicts;
@@ -32,6 +57,28 @@ namespace TranslationTool
             this.Project = project;
         }
                      
+
+		public IEnumerable<SegmentSet> Segments
+		{
+			get
+			{
+				List<SegmentSet> sets = new List<SegmentSet>();
+
+				foreach (var key in Keys)
+				{
+					List<Segment> Segments = new List<Segment>();
+					foreach (var kvp in Dicts.Where(kvp => kvp.Value.ContainsKey(key)))
+					{
+						Segments.Add(new Segment(kvp.Key, kvp.Value[key]));
+					}
+
+					//yield return new SegmentSet(key, Dicts.Where(kvp => kvp.Value.ContainsKey(key)).Select(kvp => new Segment(kvp.Key, kvp.Value[key])));
+					sets.Add(new SegmentSet(key, Segments));	
+				}
+				return sets;
+			}
+		}
+
         public static Dictionary<string, string> EmptyFromTemplate(Dictionary<string, string> template)
         {
             var dict = new Dictionary<string, string>();
