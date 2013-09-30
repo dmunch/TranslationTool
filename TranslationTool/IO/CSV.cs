@@ -11,6 +11,8 @@ namespace TranslationTool.IO
 		{
 			// open the file "data.csv" which is a CSV file with headers
 			var dicts = new Dictionary<string, Dictionary<string, string>>();
+			var comments = new Dictionary<string, string>();
+
 			List<string> languages = new List<string>();
 
 			using (CsvReader csv =
@@ -18,12 +20,19 @@ namespace TranslationTool.IO
 			{
 				int fieldCount = csv.FieldCount;
 				string currentNS = "";
+				int commentColumn = -1;
 
 				string[] headers = csv.GetFieldHeaders();
 
 				for (int c = 1; c < headers.Length; c++)
 				{
 					string language = headers[c].ToLower();
+					if (language == "Comment")
+					{
+						commentColumn = c;
+						continue;
+					}
+
 					dicts.Add(language, new Dictionary<string, string>());
 					languages.Add(language);
 				}
@@ -37,14 +46,23 @@ namespace TranslationTool.IO
 					if (currentNS == project && !key.Contains("ns:"))
 						if (!string.IsNullOrWhiteSpace(key))
 							for (int i = 1; i < fieldCount; i++)
-								dicts[headers[i].ToLower()].Add(key, csv[i]);
+							{
+								if (i != commentColumn)
+								{
+									dicts[headers[i].ToLower()].Add(key, csv[i]);
+								}
+								else
+								{
+									comments.Add(key, csv[i]);
+								}
+							}
 				}
-
 			}
 
 			var tp = new TranslationProject(project, masterLanguage, languages.ToArray());
 			tp.Dicts = dicts;
-			
+			tp.Comments = comments;
+
 			return tp;
 		}
 

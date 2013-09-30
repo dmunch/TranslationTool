@@ -35,7 +35,8 @@ namespace TranslationTool
 		
         public IEnumerable<string> Languages;
 		public string MasterLanguage { get; protected set; }
-		public string Project { get; protected set; }
+		public string Project { get; set; }
+		public Dictionary<string, string> Comments;
 
 		public IEnumerable<string> Keys
 		{
@@ -45,7 +46,7 @@ namespace TranslationTool
 			}
 		}
 
-        public TranslationProject(string project, string masterLanguage) : this(project, masterLanguage, new string[] { "de", "es", "fr", "it", "nl" })
+        public TranslationProject(string project, string masterLanguage) : this(project, masterLanguage, new string[] { "en", "de", "es", "fr", "it", "nl" })
         {
         }
 
@@ -55,6 +56,7 @@ namespace TranslationTool
             this.Languages = languages;
             this.Dicts = new Dictionary<string, Dictionary<string, string>>();            
             this.Project = project;
+			this.Comments = new Dictionary<string, string>();
         }
                      
 
