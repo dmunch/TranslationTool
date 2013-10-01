@@ -9,9 +9,10 @@ namespace TranslationTool.IO
 {
 	public class GDataSpreadSheet
 	{
-		public static TranslationProject FromGDoc(string project)
+		public static TranslationProject FromGDoc(string userName, string password, string project)
 		{
-			var g = new GDataSpreadSheet();
+			var g = new GDataSpreadSheet(userName, password);
+
 			var ws = g.QueryWorksheet(project);
 			return g.FromWorksheet(project, ws);
 		}
@@ -24,16 +25,15 @@ namespace TranslationTool.IO
 			CellQuery(ws);
 		}
 
+		public GDataSpreadSheet(string userName, string password)
+		{
+			this.Service = new SpreadsheetsService("MySpreadsheetIntegration-v1");
+			this.Service.setUserCredentials(userName, password);
+		}
+		
 		public WorksheetEntry QueryWorksheet(string title)
 		{
-			string USERNAME = "dmunch@lucca.fr";
-			string PASSWORD = "mWp2VD??";
-
-
-			this.Service = new SpreadsheetsService("MySpreadsheetIntegration-v1");
-			this.Service.setUserCredentials(USERNAME, PASSWORD);
-
-
+		
 			SpreadsheetQuery query = new SpreadsheetQuery();
 			query.Title = title;
 
