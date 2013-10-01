@@ -130,37 +130,55 @@ namespace TranslationTool
                 Console.WriteLine(kvp.Key);
 
         }
+
         public static Sync SyncDicts(Dictionary<string, string> d1, Dictionary<string, string> d2)
         {
-           // List<string> synced = new List<string>();
-            var toSync = new Sync();
+			var diff = Diff(d1, d2);
+			Patch(d1, diff);
 
-            
-            foreach (var kvp in d1)
-            {
-                if (d2.ContainsKey(kvp.Key) && kvp.Value != d2[kvp.Key] && d2[kvp.Key].Trim() != "")
-                {
-                    toSync.Updated.Add(kvp.Key, d2[kvp.Key]);
-                    toSync.Orig.Add(kvp.Key, kvp.Value);
-                }
-            }
-
-            //don't add new keys            
-            foreach (var kvp in d2)
-            {
-                if (!d1.ContainsKey(kvp.Key))
-                {
-                    d1.Add(kvp.Key, kvp.Value);
-                    toSync.New.Add(kvp.Key, kvp.Value);
-                }
-            }
-            
-            
-            foreach (var kvp in toSync.Updated)
-                d1[kvp.Key] = kvp.Value;
-                                            
-            return toSync;
+			return diff;
         }
+
+		public static void Patch(Dictionary<string, string> d, Sync toSync)
+		{
+			foreach (var kvp in toSync.New)
+			{
+				if (!d.ContainsKey(kvp.Key))
+				{
+					d.Add(kvp.Key, kvp.Value);
+				}
+			}
+
+			foreach (var kvp in toSync.Updated)
+			{ 
+				d[kvp.Key] = kvp.Value;
+			}
+		}
+
+		public static Sync Diff(Dictionary<string, string> d1, Dictionary<string, string> d2)
+		{
+			var toSync = new Sync();
+
+			foreach (var kvp in d1)
+			{
+				if (d2.ContainsKey(kvp.Key) && kvp.Value != d2[kvp.Key] && d2[kvp.Key].Trim() != "")
+				{
+					toSync.Updated.Add(kvp.Key, d2[kvp.Key]);
+					toSync.Orig.Add(kvp.Key, kvp.Value);
+				}
+			}
+
+			//don't add new keys            
+			foreach (var kvp in d2)
+			{
+				if (!d1.ContainsKey(kvp.Key))
+				{
+					toSync.New.Add(kvp.Key, kvp.Value);
+				}
+			}
+
+			return toSync;
+		}
 
         public class Sync
         {
