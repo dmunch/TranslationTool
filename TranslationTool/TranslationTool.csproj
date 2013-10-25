@@ -99,6 +99,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DictDiff.cs" />
     <Compile Include="IO\Arb.cs" />
     <Compile Include="IO\CSV.cs" />
     <Compile Include="IO\GDataSpreadSheet.cs" />

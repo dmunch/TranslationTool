@@ -29,16 +29,64 @@ namespace TranslationTool
 		}
 	}
 
-    public class TranslationProject
+	public class TranslationProjectBase
+	{
+		public IEnumerable<string> Languages;
+		public string MasterLanguage { get; protected set; }
+		public string Project { get; set; }
+
+		public TranslationProjectBase(TranslationProjectBase other)
+		{
+			this.MasterLanguage = other.MasterLanguage;
+			this.Languages = other.Languages;
+			this.Project = other.Project;
+		}
+
+		public TranslationProjectBase(string project, string masterLanguage)
+			: this(project, masterLanguage, new string[] { "en", "de", "es", "fr", "it", "nl" })
+		{
+		}
+
+		public TranslationProjectBase(string project, string masterLanguage, string[] languages)
+		{
+			this.MasterLanguage = masterLanguage;
+			this.Languages = languages;
+			
+			this.Project = project;
+		}
+			
+		public static void PrintSynced(Dictionary<string, string> synced, string language)
+		{
+			Console.WriteLine("Synced {0} rows in {1}.", synced.Count, language);
+			foreach (var kvp in synced)
+				Console.WriteLine(kvp.Key);
+
+		}
+	}
+
+	public class TranslationProjectDiff : TranslationProjectBase
+	{
+		public Dictionary<string, DictDiff> DiffPerLanguage { get; protected set; }
+
+		public TranslationProjectDiff(TranslationProjectBase other, Dictionary<string, DictDiff> _diffPerLanguage) : base(other)
+		{
+			this.DiffPerLanguage = _diffPerLanguage;
+		}
+
+		public void Print()
+		{
+			foreach (var diff in DiffPerLanguage)
+			{
+				diff.Value.Print(diff.Key);
+			}
+		}
+	}
+
+    public class TranslationProject : TranslationProjectBase
     {
         public Dictionary<string, Dictionary<string, string>> Dicts;
 		public Dictionary<string, string> Comments;
-
-        public IEnumerable<string> Languages;
-		public string MasterLanguage { get; protected set; }
-		public string Project { get; set; }
 		
-
 		public IEnumerable<string> Keys
 		{
 			get
@@ -47,20 +95,18 @@ namespace TranslationTool
 			}
 		}
 
-        public TranslationProject(string project, string masterLanguage) : this(project, masterLanguage, new string[] { "en", "de", "es", "fr", "it", "nl" })
+        public TranslationProject(string project, string masterLanguage) : base(project, masterLanguage)
         {
+			this.Dicts = new Dictionary<string, Dictionary<string, string>>();
+			this.Comments = new Dictionary<string, string>();
         }
 
-        public TranslationProject(string project, string masterLanguage, string[] languages)
+        public TranslationProject(string project, string masterLanguage, string[] languages) : base(project, masterLanguage, languages)
         {
-			this.MasterLanguage = masterLanguage;
-            this.Languages = languages;
             this.Dicts = new Dictionary<string, Dictionary<string, string>>();            
-            this.Project = project;
 			this.Comments = new Dictionary<string, string>();
         }
                      
-
 		public IEnumerable<SegmentSet> Segments
 		{
 			get
@@ -111,18 +157,35 @@ namespace TranslationTool
             }
         }
 
-        public Dictionary<string, DictDiff> SyncWith(TranslationProject tp)
+        public TranslationProjectDiff SyncWith(TranslationProject tp)
         {
-            var allSync = new Dictionary<string, DictDiff>();
+			var diff = Diff(tp);
+			Patch(diff);
 
-            foreach (var l in Languages)
-            {
-                if (!Dicts.ContainsKey(l) || !tp.Dicts.ContainsKey(l)) continue;
-                allSync.Add(l, DictDiff.SyncDicts(Dicts[l], tp.Dicts[l]));
-                allSync[l].Print(l);
-            }
-            return allSync;
-        }
+			return diff;
+		}
+
+		public TranslationProjectDiff Diff(TranslationProject tp)
+		{
+			var allSync = new Dictionary<string, DictDiff>();
+
+			foreach (var l in Languages)
+			{
+				if (!Dicts.ContainsKey(l) || !tp.Dicts.ContainsKey(l)) continue;
+				allSync.Add(l, DictDiff.Diff(Dicts[l], tp.Dicts[l]));				
+			}
+
+			return new TranslationProjectDiff(this, allSync);
+		}
+
+		public void Patch(TranslationProjectDiff tpDiff)
+		{
+			foreach (var l in Languages)
+			{
+				if (!Dicts.ContainsKey(l) || !tpDiff.DiffPerLanguage.ContainsKey(l)) continue;
+				DictDiff.Patch(Dicts[l], tpDiff.DiffPerLanguage[l]);				
+			}
+		}
 
         public static void PrintSynced(Dictionary<string, string> synced, string language)
         {

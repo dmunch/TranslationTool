@@ -23,12 +23,15 @@ namespace TranslationTool
 
 			os.WriteLine("Updated {0} rows in {1}.", Updated.Count, language);
 			foreach (var kvp in Updated)
-
+			{ 
 				os.WriteLine("K: {0}: Old: {1} | New {2}", kvp.Key, Orig[kvp.Key], kvp.Value);
+			}
 
 			os.WriteLine("Added {0} rows in {1}.", New.Count, language);
 			foreach (var kvp in New)
+			{ 
 				os.WriteLine(kvp.Key);
+			}
 		}
 
 		public static DictDiff SyncDicts(Dictionary<string, string> d1, Dictionary<string, string> d2)
