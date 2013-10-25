@@ -2,16 +2,16 @@
 using System.IO;
 using System.Text;
 using LumenWorks.Framework.IO.Csv;
+using System;
 
 namespace TranslationTool.IO
 {
 	public class CSV
 	{
-		public static TranslationProject FromCSV(string file, string project, string masterLanguage)
+		public static TranslationProject FromCSV(string file, string project, string masterLanguage, bool createMissingKeys = true)
 		{
 			// open the file "data.csv" which is a CSV file with headers
-			var dicts = new Dictionary<string, Dictionary<string, string>>();
-			var comments = new Dictionary<string, string>();
+			TranslationProject tp = null;
 
 			List<string> languages = new List<string>();
 
@@ -33,9 +33,9 @@ namespace TranslationTool.IO
 						continue;
 					}
 
-					dicts.Add(language, new Dictionary<string, string>());
 					languages.Add(language);
 				}
+				tp = new TranslationProject(project, masterLanguage, languages.ToArray());
 
 				while (csv.ReadNextRecord())
 				{
@@ -44,24 +44,28 @@ namespace TranslationTool.IO
 						currentNS = key.Split(':')[1];
 
 					if (currentNS == project && !key.Contains("ns:"))
+					{
+						if (string.IsNullOrWhiteSpace(key) && createMissingKeys)
+						{
+							string keyInspiration = commentColumn != 1 ? csv[1] : csv[2];
+							key = tp.KeyProposal(keyInspiration);
+						}
+
 						if (!string.IsNullOrWhiteSpace(key))
 							for (int i = 1; i < fieldCount; i++)
 							{
 								if (i != commentColumn)
 								{
-									dicts[headers[i].ToLower()].Add(key, csv[i]);
+									tp.Dicts[headers[i].ToLower()].Add(key, csv[i]);
 								}
 								else
 								{
-									comments.Add(key, csv[i]);
+									tp.Comments.Add(key, csv[i]);
 								}
 							}
+					}
 				}
 			}
-
-			var tp = new TranslationProject(project, masterLanguage, languages.ToArray());
-			tp.Dicts = dicts;
-			tp.Comments = comments;
 
 			return tp;
 		}

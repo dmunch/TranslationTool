@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace TranslationTool
 {
@@ -61,7 +62,7 @@ namespace TranslationTool
 			foreach (var kvp in synced)
 				Console.WriteLine(kvp.Key);
 
-		}
+		}		
 	}
 
 	public class TranslationProjectDiff : TranslationProjectBase
@@ -105,6 +106,11 @@ namespace TranslationTool
         {
             this.Dicts = new Dictionary<string, Dictionary<string, string>>();            
 			this.Comments = new Dictionary<string, string>();
+
+			foreach (var lang in Languages)
+			{
+				this.Dicts.Add(lang, new Dictionary<string, string>());
+			}
         }
                      
 		public IEnumerable<SegmentSet> Segments
@@ -185,6 +191,35 @@ namespace TranslationTool
 				if (!Dicts.ContainsKey(l) || !tpDiff.DiffPerLanguage.ContainsKey(l)) continue;
 				DictDiff.Patch(Dicts[l], tpDiff.DiffPerLanguage[l]);				
 			}
+		}
+
+		/// <summary>
+		/// Proposes a resource key based on a translation message
+		/// </summary>
+		/// <param name="sentence"></param>
+		/// <returns></returns>
+		public string KeyProposal(string sentence)
+		{
+			var words = sentence.Split(' ');
+			StringBuilder keyBuilder = new StringBuilder();
+			int wordCount = 0;
+			while (keyBuilder.Length / 2 < Math.Min(words.Length, 3))
+			{
+				var word = words[wordCount++].ToUpper();
+				if (word.Contains("[") || word.Contains("]") || word.Contains("{") || word.Contains("}")) continue;
+
+				keyBuilder.Append(word);
+				keyBuilder.Append('_');
+			}
+			string keyBase = keyBuilder.ToString().Replace(' ', '_').TrimEnd(' ', '_');
+			string key = keyBase;
+			int keyCounter = 1;
+			while (Dicts[MasterLanguage].ContainsKey(key))
+			{
+				key = keyBase + "_" + (keyCounter++).ToString();
+			}
+
+			return key;
 		}
 
         public static void PrintSynced(Dictionary<string, string> synced, string language)

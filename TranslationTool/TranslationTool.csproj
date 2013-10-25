@@ -106,6 +106,7 @@
     <Compile Include="IO\ResX.cs" />
     <Compile Include="IO\TMX.cs" />
     <Compile Include="IO\Xls.cs" />
+    <Compile Include="Lucene\KeyMatcher.cs" />
     <Compile Include="Lucene\TranslationMemory.cs" />
     <Compile Include="Lucene\SimpleExample.cs" />
     <Compile Include="MessageFormatter.cs" />
