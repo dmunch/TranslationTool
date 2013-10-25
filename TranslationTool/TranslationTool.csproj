@@ -101,6 +101,9 @@
   <ItemGroup>
     <Compile Include="DictDiff.cs" />
     <Compile Include="IO\Arb.cs" />
+    <Compile Include="IO\Collection\CSV.cs" />
+    <Compile Include="IO\Collection\ResX.cs" />
+    <Compile Include="IO\Collection\Xls.cs" />
     <Compile Include="IO\CSV.cs" />
     <Compile Include="IO\GDataSpreadSheet.cs" />
     <Compile Include="IO\ResX.cs" />
