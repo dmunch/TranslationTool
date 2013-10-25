@@ -32,11 +32,12 @@ namespace TranslationTool
     public class TranslationProject
     {
         public Dictionary<string, Dictionary<string, string>> Dicts;
-		
+		public Dictionary<string, string> Comments;
+
         public IEnumerable<string> Languages;
 		public string MasterLanguage { get; protected set; }
 		public string Project { get; set; }
-		public Dictionary<string, string> Comments;
+		
 
 		public IEnumerable<string> Keys
 		{
@@ -110,14 +111,14 @@ namespace TranslationTool
             }
         }
 
-        public Dictionary<string, Sync> SyncWith(TranslationProject tp)
+        public Dictionary<string, DictDiff> SyncWith(TranslationProject tp)
         {
-            var allSync = new Dictionary<string, Sync>();
+            var allSync = new Dictionary<string, DictDiff>();
 
             foreach (var l in Languages)
             {
                 if (!Dicts.ContainsKey(l) || !tp.Dicts.ContainsKey(l)) continue;
-                allSync.Add(l, SyncDicts(Dicts[l], tp.Dicts[l]));
+                allSync.Add(l, DictDiff.SyncDicts(Dicts[l], tp.Dicts[l]));
                 allSync[l].Print(l);
             }
             return allSync;
@@ -129,81 +130,6 @@ namespace TranslationTool
             foreach (var kvp in synced)
                 Console.WriteLine(kvp.Key);
 
-        }
-
-        public static Sync SyncDicts(Dictionary<string, string> d1, Dictionary<string, string> d2)
-        {
-			var diff = Diff(d1, d2);
-			Patch(d1, diff);
-
-			return diff;
-        }
-
-		public static void Patch(Dictionary<string, string> d, Sync toSync)
-		{
-			foreach (var kvp in toSync.New)
-			{
-				if (!d.ContainsKey(kvp.Key))
-				{
-					d.Add(kvp.Key, kvp.Value);
-				}
-			}
-
-			foreach (var kvp in toSync.Updated)
-			{ 
-				d[kvp.Key] = kvp.Value;
-			}
-		}
-
-		public static Sync Diff(Dictionary<string, string> d1, Dictionary<string, string> d2)
-		{
-			var toSync = new Sync();
-
-			foreach (var kvp in d1)
-			{
-				if (d2.ContainsKey(kvp.Key) && kvp.Value != d2[kvp.Key] && d2[kvp.Key].Trim() != "")
-				{
-					toSync.Updated.Add(kvp.Key, d2[kvp.Key]);
-					toSync.Orig.Add(kvp.Key, kvp.Value);
-				}
-			}
-
-			//don't add new keys            
-			foreach (var kvp in d2)
-			{
-				if (!d1.ContainsKey(kvp.Key))
-				{
-					toSync.New.Add(kvp.Key, kvp.Value);
-				}
-			}
-
-			return toSync;
-		}
-
-        public class Sync
-        {
-            public Dictionary<string, string> Orig = new Dictionary<string, string>();
-            public Dictionary<string, string> Updated = new Dictionary<string, string>();
-            public Dictionary<string, string> New = new Dictionary<string, string>();
-
-            public Sync()
-            {
-            }
-
-            public void Print(string language, TextWriter os = null)
-            {
-                if (os == null)
-                    os = Console.Out;
-
-                os.WriteLine("Updated {0} rows in {1}.", Updated.Count, language);
-                foreach (var kvp in Updated)
-
-                    os.WriteLine("K: {0}: Old: {1} | New {2}", kvp.Key, Orig[kvp.Key], kvp.Value);
-
-                os.WriteLine("Added {0} rows in {1}.", New.Count, language);
-                foreach (var kvp in New)
-                    os.WriteLine(kvp.Key);
-            }
-        }
+        }       
     }
 }
