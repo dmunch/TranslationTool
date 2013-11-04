@@ -42,7 +42,7 @@ namespace TranslationTool
 
 			//string csvFile = @"D:\Users\login\Documents\i18n\Figgo - traductions.csv";
 			var tp = CSV.FromCSV(csvFileGdocs, "WFIGGO", "en");
-			Xls.ToXLS(tp, targetDir + @"\WFIGGO.xlsx");
+			XlsX.ToXLSX(tp, targetDir + @"\WFIGGO.xlsx");
 			Arb.ToArb(tp, targetDir);
 			Arb.ToArbAll(tp, targetDir);
 			TMX.ToTMX(tp, targetDir);
@@ -66,8 +66,8 @@ namespace TranslationTool
 		public static void TranslationMemory()
 		{
 			var tp = CSV.FromCSV(csvFileGdocs, "WFIGGO", "en");
-			var tpc = TranslationProjectCollection.FromResX(new string[] { "WFIGGO", "FIACCUEIL", "FICOMMON" }, directory, "en");
-
+			var tpc = IO.Collection.ResX.FromResX(new string[] { "WFIGGO", "FIACCUEIL", "FICOMMON" }, directory, "en");
+			
 			var memory = new Memory.TranslationMemory(tpc);
 			memory.Query("fr", "annuller demande");
 		}

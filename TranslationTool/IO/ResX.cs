@@ -27,10 +27,14 @@ namespace TranslationTool.IO
 		{
 			// Enumerate the resources in the file.
 			//ResXResourceReader rr = ResXResourceReader.FromFileContents(file);
+			var stringDict = new Dictionary<string, string>();
+
+			if (!System.IO.File.Exists(fileName))
+				return stringDict;
+
 			ResXResourceReader rr = new ResXResourceReader(fileName);
 			IDictionaryEnumerator dict = rr.GetEnumerator();
-
-			var stringDict = new Dictionary<string, string>();
+			
 			while (dict.MoveNext())
 				stringDict.Add(dict.Key as string, dict.Value as string);
 
