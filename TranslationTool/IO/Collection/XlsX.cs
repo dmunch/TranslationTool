@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace TranslationTool.IO.Collection
 {
-	class Xls
+	class XlsX
 	{
-		public void ToXLS(TranslationProjectCollection tpc, string targetDir)
+		public void ToXLSX(TranslationProjectCollection tpc, string targetDir)
 		{
 			string fileName = @"\";
 			foreach (var kvp in tpc.Projects)
@@ -37,7 +37,7 @@ namespace TranslationTool.IO.Collection
 					worksheet.Cells[rowCount, 1].Value = "ns:" + kvp.Key;
 					rowCount++;
 
-					rowCount = IO.Xls.ToXLS(kvp.Value, worksheet, rowCount);
+					rowCount = IO.Export.ToIWorksheet(kvp.Value, new OpenXmlWorksheet(worksheet), rowCount);
 				}
 
 				package.Save();
