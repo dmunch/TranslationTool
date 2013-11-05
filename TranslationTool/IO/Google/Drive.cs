@@ -17,6 +17,7 @@ using Google.Apis.Services;
 using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Util.Store;
 using System.Net;
+using Google.Apis.Authentication;
 
 namespace TranslationTool.IO.Google
 {
@@ -45,8 +46,8 @@ namespace TranslationTool.IO.Google
 
 			return driveService;
 		}
-
-		public static void UploadXlsx(string name, string fileName)
+			
+		public static void UploadXlsx(string name, string fileName, File folder = null)
 		{
 			using (System.IO.FileStream xlsStream = new System.IO.FileStream(fileName, System.IO.FileMode.Open))
 			{
@@ -57,13 +58,107 @@ namespace TranslationTool.IO.Google
 				file.Title = name;
 				file.Description = string.Format("Created via {0} at {1}", Drive.ApplicationName, DateTime.Now.ToString());
 				file.MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+				if (folder != null)
+				{
+					var parRef = new ParentReference();
+					parRef.Id = folder.Id;
+					file.Parents = new List<ParentReference>();
+					file.Parents.Add(parRef);
+				}
+
 				var request = driveService.Files.Insert(file, xlsStream, file.MimeType);
 
 				request.Convert = true;
-
+				
 				var r = request.UploadAsync().Result;
 			}
 		}		
 
+		public static File FindFolder(string folderName)
+		{
+			using (var service = GetService())
+			{
+				var listRequest = service.Files.List();
+				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.folder' and title = '{0}'", folderName);
+
+				var result = listRequest.Execute();
+				
+				return result.Items.First();
+			}
+		}
+
+		public static IList<File> FindSpreadsheetFiles(File folder)
+		{
+			using (var service = GetService())
+			{
+				var listRequest = service.Files.List();
+				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and '{0}' in parents", folder.Id);
+
+				var result = listRequest.Execute();
+
+				return result.Items;
+			}
+		}
+		
+		public static System.IO.Stream DownloadFile(File file, bool asXlsx = true)
+		{
+			using (var service = GetService())
+			{
+				return DownloadFile(service.Authenticator, file, asXlsx);
+			}
+		}
+
+		public static System.IO.Stream DownloadFile(IAuthenticator authenticator, File file, bool asXlsx = true)
+		{
+			
+			var downloadUrl = asXlsx ? file.ExportLinks["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] : file.DownloadUrl;
+
+			if (!String.IsNullOrEmpty(downloadUrl))
+			{
+				try
+				{
+					//HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new Uri(downloadUrl));
+					//authenticator.ApplyAuthenticationToRequest(request);
+					var request = Spreadsheets.GetRequestFactory().CreateRequest(GDataRequestType.Query, new Uri(downloadUrl));
+					request.Execute();
+					var response = request;
+					//HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+					if (true)//response.StatusCode == HttpStatusCode.OK)
+					{
+						var responseStream = response.GetResponseStream();
+						//var memStream = new System.IO.MemoryStream(new byte[responseStream.Length], true);
+						var memStream = new System.IO.MemoryStream();
+						//	xlsStream.Seek(0, System.IO.SeekOrigin.Begin);
+						responseStream.CopyTo(memStream);
+
+						using (var fileStream = System.IO.File.Create(@"D:\Users\login\Documents\i18n\TTTT.xlsx"))
+						{
+							memStream.Seek(0, System.IO.SeekOrigin.Begin);
+							memStream.CopyTo(fileStream);
+						}
+
+						memStream.Seek(0, System.IO.SeekOrigin.Begin);
+						return memStream;
+					}
+					else
+					{
+						Console.WriteLine(
+							"An error occurred: ");//+ response.StatusDescription);
+						return null;
+					}
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("An error occurred: " + e.Message);
+					return null;
+				}
+			}
+			else
+			{
+				// The file doesn't have any content stored on Drive.
+				return null;
+			}
+		}
     }
 }

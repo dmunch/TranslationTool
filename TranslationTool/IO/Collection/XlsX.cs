@@ -1,11 +1,12 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace TranslationTool.IO.Collection
 {
 	class XlsX
-	{
-		public void ToXLSX(TranslationProjectCollection tpc, string targetDir)
+	{				
+		public void ToOneXLSX(TranslationProjectCollection tpc, string targetDir)
 		{
 			string fileName = @"\";
 			foreach (var kvp in tpc.Projects)

@@ -8,6 +8,14 @@ namespace TranslationTool.IO.Google
 	class Spreadsheets
 	{
 		public static SpreadsheetsService GetService()
+		{			
+			var spreadsheetsService = new SpreadsheetsService(Drive.ApplicationName);
+			spreadsheetsService.RequestFactory = GetRequestFactory();
+
+			return spreadsheetsService;
+		}
+
+		public static GOAuth2RequestFactory GetRequestFactory()
 		{
 			GOAuth2RequestFactory requestFactory;
 
@@ -55,10 +63,7 @@ namespace TranslationTool.IO.Google
 				requestFactory = new GOAuth2RequestFactory(null, "MySpreadsheetIntegration-v1", parameters);
 			}
 
-			var spreadsheetsService = new SpreadsheetsService(Drive.ApplicationName);
-			spreadsheetsService.RequestFactory = requestFactory;
-
-			return spreadsheetsService;
+			return requestFactory;			
 		}
 	}
 }

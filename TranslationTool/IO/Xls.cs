@@ -34,6 +34,22 @@ namespace TranslationTool.IO
 
 			return stream;
 		}
+
+		public static string ToXlsX(string fileName)
+		{
+			const string sOfficePath = @"C:\Program Files (x86)\LibreOffice 4.0\program\soffice.exe";
+
+			string arg = "--headless --convert-to xlsx " + fileName;
+
+			var p2 = new System.Diagnostics.Process();
+			p2.StartInfo = new System.Diagnostics.ProcessStartInfo();
+			p2.StartInfo.Arguments = arg;
+			p2.StartInfo.FileName = sOfficePath;
+			p2.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(fileName);
+			p2.Start();
+			p2.WaitForExit();
+			return p2.StartInfo.WorkingDirectory + @"\" + System.IO.Path.GetFileNameWithoutExtension(fileName) + ".xlsx";
+		}
 	}
 
 
@@ -45,15 +61,18 @@ namespace TranslationTool.IO
 			this.Ws = ws;
 		}
 
+		public int Columns { get { return Ws.Cells.LastColIndex; } }
+		public int Rows { get { return Ws.Cells.LastRowIndex; } }
+
 		public object this[int row, int column]
 		{
 			get
 			{
-				return this.Ws.Cells[row, column].Value;
+				return this.Ws.Cells[row - 1, column - 1].Value;
 			}
 			set
 			{
-				this.Ws.Cells[row, column] = new Cell(value);
+				this.Ws.Cells[row - 1, column - 1] = new Cell(value);
 			}
 		}
 	}
