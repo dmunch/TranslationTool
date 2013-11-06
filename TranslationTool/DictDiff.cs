@@ -16,6 +16,26 @@ namespace TranslationTool
 		{
 		}
 
+		public void PrintDiff(TextWriter os = null)
+		{
+			if (os == null)
+				os = Console.Out;
+		
+			var diff = new DiffMatchPatch.diff_match_patch();
+			foreach (var kvp in Updated)
+			{
+				var diffs = diff.diff_main(Orig[kvp.Key], kvp.Value);
+				diff.diff_cleanupSemantic(diffs);
+				os.WriteLine("K: {0}, diffs {1}", kvp.Key, diffs.Count);
+
+				foreach (var d in diffs)
+				{
+					os.WriteLine("{0}: {1}", d.operation, d.text);
+				}
+				//diff.diff_prettyHtml(diffs);
+			}
+		}
+
 		public void Print(string language, TextWriter os = null)
 		{
 			if (os == null)
@@ -24,7 +44,7 @@ namespace TranslationTool
 			os.WriteLine("Updated {0} rows in {1}.", Updated.Count, language);
 			foreach (var kvp in Updated)
 			{ 
-				os.WriteLine("K: {0}: Old: {1} | New {2}", kvp.Key, Orig[kvp.Key], kvp.Value);
+				os.WriteLine("K: {0}\n Old: {1} \n New: {2}", kvp.Key, Orig[kvp.Key], kvp.Value);
 			}
 
 			os.WriteLine("Added {0} rows in {1}.", New.Count, language);
