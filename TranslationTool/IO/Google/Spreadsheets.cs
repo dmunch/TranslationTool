@@ -60,7 +60,7 @@ namespace TranslationTool.IO.Google
 				//http://stackoverflow.com/questions/12077455/gdata-oauthutil-getaccesstoken-does-not-return-a-refresh-token-value
 				OAuthUtil.GetAccessToken(parameters);
 
-				requestFactory = new GOAuth2RequestFactory(null, "MySpreadsheetIntegration-v1", parameters);
+				requestFactory = new GOAuth2RequestFactory(null, Drive.ApplicationName, parameters);
 			}
 
 			return requestFactory;			

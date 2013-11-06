@@ -103,14 +103,6 @@ namespace TranslationTool.IO.Google
 		
 		public static System.IO.Stream DownloadFile(File file, bool asXlsx = true)
 		{
-			using (var service = GetService())
-			{
-				return DownloadFile(service.Authenticator, file, asXlsx);
-			}
-		}
-
-		public static System.IO.Stream DownloadFile(IAuthenticator authenticator, File file, bool asXlsx = true)
-		{
 			
 			var downloadUrl = asXlsx ? file.ExportLinks["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] : file.DownloadUrl;
 
@@ -120,33 +112,17 @@ namespace TranslationTool.IO.Google
 				{
 					//HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new Uri(downloadUrl));
 					//authenticator.ApplyAuthenticationToRequest(request);
+
 					var request = Spreadsheets.GetRequestFactory().CreateRequest(GDataRequestType.Query, new Uri(downloadUrl));
 					request.Execute();
-					var response = request;
-					//HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-					if (true)//response.StatusCode == HttpStatusCode.OK)
-					{
-						var responseStream = response.GetResponseStream();
-						//var memStream = new System.IO.MemoryStream(new byte[responseStream.Length], true);
-						var memStream = new System.IO.MemoryStream();
-						//	xlsStream.Seek(0, System.IO.SeekOrigin.Begin);
-						responseStream.CopyTo(memStream);
-
-						using (var fileStream = System.IO.File.Create(@"D:\Users\login\Documents\i18n\TTTT.xlsx"))
-						{
-							memStream.Seek(0, System.IO.SeekOrigin.Begin);
-							memStream.CopyTo(fileStream);
-						}
-
-						memStream.Seek(0, System.IO.SeekOrigin.Begin);
-						return memStream;
-					}
-					else
-					{
-						Console.WriteLine(
-							"An error occurred: ");//+ response.StatusDescription);
-						return null;
-					}
+					
+					var responseStream = request.GetResponseStream();
+					var memStream = new System.IO.MemoryStream();
+					responseStream.CopyTo(memStream);
+		
+					memStream.Seek(0, System.IO.SeekOrigin.Begin);
+					return memStream;
+					
 				}
 				catch (Exception e)
 				{
