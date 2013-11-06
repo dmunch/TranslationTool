@@ -163,6 +163,26 @@ namespace TranslationTool
             }
         }
 
+		public void RenameVariables(string old, string newName)
+		{
+			foreach (var l in Languages)
+			{
+				if (!Dicts.ContainsKey(l)) continue;
+
+				Dictionary<string, string> keysToReplace = new Dictionary<string, string>();
+				foreach (var kvp in Dicts[l])
+				{
+					if (string.IsNullOrWhiteSpace(kvp.Value.Trim())) continue;
+					keysToReplace.Add(kvp.Key, kvp.Value.Replace(old, newName));
+				}
+
+				foreach (var kvp in keysToReplace)
+				{
+					Dicts[l][kvp.Key] = kvp.Value;
+				}
+			}
+		}
+
         public TranslationProjectDiff SyncWith(TranslationProject tp)
         {
 			var diff = Diff(tp);
