@@ -25,17 +25,17 @@ namespace TranslationTool.IO.Collection
 				var worksheet = package.Workbook.Worksheets.Add("Traductions");
 
 				//write header
-				int columnCount = 1;
-				worksheet.Cells[1, columnCount++].Value = "";
-				worksheet.Cells[1, columnCount++].Value = tpc.Projects.First().Value.MasterLanguage;
+				int columnCount = 0;
+				worksheet.Cells[0, columnCount++].Value = "";
+				worksheet.Cells[0, columnCount++].Value = tpc.Projects.First().Value.MasterLanguage;
 
 				foreach (var l in tpc.Projects.First().Value.Languages)
-					worksheet.Cells[1, columnCount++].Value = l;
+					worksheet.Cells[0, columnCount++].Value = l;
 
-				int rowCount = 2;
+				int rowCount = 1;
 				foreach (var kvp in tpc.Projects)
 				{
-					worksheet.Cells[rowCount, 1].Value = "ns:" + kvp.Key;
+					worksheet.Cells[rowCount, 0].Value = "ns:" + kvp.Key;
 					rowCount++;
 
 					rowCount = IO.Export.ToIWorksheet(kvp.Value, new OpenXmlWorksheet(worksheet), rowCount);

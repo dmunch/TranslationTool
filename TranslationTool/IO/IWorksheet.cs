@@ -77,12 +77,12 @@ namespace TranslationTool.IO
 			return tp;
 		}
 
-		public static int ToIWorksheet(TranslationProject project, IWorksheet worksheet, int rowStart = 1)
+		public static int ToIWorksheet(TranslationProject project, IWorksheet worksheet, int rowStart = 0)
 			{
-				int columnCounter = 1;
+				int columnCounter = 0;
 				int rowCounter = rowStart;
 
-				if (rowStart == 1) //write header
+				if (rowStart == 0) //write header
 				{
 					worksheet[rowStart, columnCounter++] = "";
 
@@ -93,7 +93,7 @@ namespace TranslationTool.IO
 
 				foreach (var key in project.Keys)
 				{
-					columnCounter = 1;
+					columnCounter = 0;
 					worksheet[rowCounter, columnCounter++] = key;
 
 					foreach (var l in project.Languages)

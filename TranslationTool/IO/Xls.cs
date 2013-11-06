@@ -8,7 +8,7 @@ namespace TranslationTool.IO
 		protected static Workbook _ToXLS(TranslationProject project)
 		{
 			Worksheet worksheet = new Worksheet("Traductions");
-			Export.ToIWorksheet(project, new XlsWorksheet(worksheet), 1);
+			Export.ToIWorksheet(project, new XlsWorksheet(worksheet));
 
 			Workbook workbook = new Workbook();
 			workbook.Worksheets.Add(worksheet);
@@ -68,11 +68,11 @@ namespace TranslationTool.IO
 		{
 			get
 			{
-				return this.Ws.Cells[row - 1, column - 1].Value;
+				return this.Ws.Cells[row, column].Value;
 			}
 			set
 			{
-				this.Ws.Cells[row - 1, column - 1] = new Cell(value);
+				this.Ws.Cells[row, column] = new Cell(value);
 			}
 		}
 	}

@@ -4,6 +4,13 @@ namespace TranslationTool.IO
 {		
 	public class XlsX
 	{
+		public static TranslationProject FromXLSX(string project, string masterLanguage, string fileName)
+		{
+			using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			{
+				return FromXLSX(project, masterLanguage, stream);
+			}
+		}
 
 		public static TranslationProject FromXLSX(string project, string masterLanguage, Stream stream)
 		{			
@@ -26,7 +33,7 @@ namespace TranslationTool.IO
 			using (var package = new OfficeOpenXml.ExcelPackage(newFile))
 			{
 				var worksheet = package.Workbook.Worksheets.Add("Traductions");
-				Export.ToIWorksheet(project, new OpenXmlWorksheet(worksheet), 1);
+				Export.ToIWorksheet(project, new OpenXmlWorksheet(worksheet));
 
 				package.Save();				
 			}
@@ -38,7 +45,7 @@ namespace TranslationTool.IO
 			using (var package = new OfficeOpenXml.ExcelPackage(xlsStream))
 			{
 				var worksheet = package.Workbook.Worksheets.Add("Traductions");
-				Export.ToIWorksheet(project, new OpenXmlWorksheet(worksheet), 1);
+				Export.ToIWorksheet(project, new OpenXmlWorksheet(worksheet));
 
 				package.Save();
 			}

@@ -331,7 +331,7 @@ namespace TranslationTool.IO
 			MemoryStream xlsStream = new MemoryStream();
 
 			var worksheet = new OpenXmlWorksheet2();
-			Export.ToIWorksheet(project, worksheet, 1);
+			Export.ToIWorksheet(project, worksheet);
 
 			using (SpreadsheetDocument myDoc = SpreadsheetDocument.Create(xlsStream, SpreadsheetDocumentType.Workbook))
 			{
@@ -390,7 +390,7 @@ namespace TranslationTool.IO
 			MemoryStream xlsStream = new MemoryStream();
 
 			var worksheet = new OpenXmlWorksheet2();
-			Export.ToIWorksheet(project, worksheet, 1);
+			Export.ToIWorksheet(project, worksheet);
 			
 			var ss = new Stylesheet();
 			ss.CellStyleFormats = new CellStyleFormats();
