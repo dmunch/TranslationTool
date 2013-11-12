@@ -17,6 +17,14 @@ namespace TranslationTool.IO
 			return g.FromWorksheet(project, ws);
 		}
 
+		public static TranslationProject FromGDoc(string project)
+		{
+			var g = new GDataSpreadSheet();
+
+			var ws = g.QueryWorksheet(project);
+			return g.FromWorksheet(project, ws);
+		}
+
 		SpreadsheetsService Service;
 
 		public void Test()
@@ -25,10 +33,17 @@ namespace TranslationTool.IO
 			CellQuery(ws);
 		}
 
+		public GDataSpreadSheet()
+		{
+			this.Service = Google.Spreadsheets.GetService();
+		}
+
 		public GDataSpreadSheet(string userName, string password)
 		{
 			this.Service = new SpreadsheetsService("MySpreadsheetIntegration-v1");
+            //this.Service.SetAuthenticationToken("-DQAAAOQAAADXyTBmxLMugfFLvQ1X019nvotwxaxL2wSYSp0rTmPIbbiCt6SpfYMd0AJrgL58S2m92avxMj5lQVASfD30RYRtTDXp2XrMhVFa5GYKbh_hJwTvFKmc3cqJM1FS61bIh9w-b0lQ1TjlzWsffiHr8R4wv3gV24_lScn0tkxrI-84mMU27gyaoWtPlof5ynw9LujgKrekcLlXfYNJZDlIwa9DWGtif8JG1S0Sx92S8OjO1UaYASBh-4WOJ8q9Imx-Y12BxJ4faNESoji_jpXlYonr6kj3IGTWzSGITYZBpX04ieJqojMBkUIjav8n-Js_aI8");
 			this.Service.setUserCredentials(userName, password);
+            //string token = this.Service.Credentials.ClientToken;
 		}
 		
 		public WorksheetEntry QueryWorksheet(string title)
