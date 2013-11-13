@@ -183,6 +183,23 @@ namespace TranslationTool
 			}
 		}
 
+		public void RemoveKeys(IEnumerable<string> keys)
+		{
+			foreach (var l in Languages)
+			{
+				if (!Dicts.ContainsKey(l)) continue;
+				
+				var dict = Dicts[l];
+				foreach (var key in keys)
+				{
+					if (dict.ContainsKey(key))
+					{
+						dict.Remove(key);
+					}
+				}
+			}
+		}
+
         public TranslationProjectDiff SyncWith(TranslationProject tp)
         {
 			var diff = Diff(tp);
