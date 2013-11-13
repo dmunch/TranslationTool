@@ -73,8 +73,11 @@ namespace TranslationTool.Memory
 			var dir = Lucene.Net.Store.FSDirectory.Open(tmp);
 			bool created;
 			IsIndexExists(out created, dir);
-
-			using (IndexWriter writer = new IndexWriter(dir, new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_30), false, IndexWriter.MaxFieldLength.UNLIMITED))
+			
+			//var frAnalyser = new Lucene.Net.Analysis.Fr.FrenchAnalyzer(Lucene.Net.Util.Version.LUCENE_30);
+			//var frAnalyser = new Lucene.Net.Analysis.Snowball.SnowballAnalyzer(Lucene.Net.Util.Version.LUCENE_30, "French");
+			var frAnalyser = new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_30);
+			using (IndexWriter writer = new IndexWriter(dir, frAnalyser, true, IndexWriter.MaxFieldLength.UNLIMITED))
 			{ 
 				foreach(var tp in tps)
 					IndexDocument(writer, tp);
@@ -88,19 +91,23 @@ namespace TranslationTool.Memory
 		public static IEnumerable<QueryResult> SearchTranslationProjects(Lucene.Net.Store.Directory dir, string lang, string searchText, IEnumerable<string> languages)
 		{
 			var ir = IndexReader.Open(dir, true);
+			
 			var mlt = new MoreLikeThis(ir);
-			mlt.SetFieldNames(new string[] { lang });
+			//mlt.SetFieldNames(new string[] { lang });
+			mlt.SetFieldNames(new[] { "fr" });
 			mlt.MinTermFreq = 1;
 			mlt.MinDocFreq = 1;
 			mlt.MinWordLen = 4;
-
+			//mlt.Analyzer = new Lucene.Net.Analysis.Fr.FrenchAnalyzer(Lucene.Net.Util.Version.LUCENE_30);
+			//mlt.Analyzer = new Lucene.Net.Analysis.Snowball.SnowballAnalyzer(Lucene.Net.Util.Version.LUCENE_30, "French");
 			var reader = new System.IO.StringReader(searchText);
 			var query = mlt.Like(reader);
+			
 			var results = new List<QueryResult>();
-
+			
 			using (var searcher = new IndexSearcher(dir, true))
 			{
-				var topDocs = searcher.Search(query, 1000);
+				var topDocs = searcher.Search(query, 50);
 				foreach (var scoreDoc in topDocs.ScoreDocs)
 				{
 					Document doc = searcher.Doc(scoreDoc.Doc);
@@ -126,10 +133,15 @@ namespace TranslationTool.Memory
 				doc.Add(new Field("key", key, Field.Store.YES, Field.Index.NOT_ANALYZED));
 
 				foreach (var lang in tp.Languages)
-				{ 
+				{
+					if (lang == "fr") continue;
+
 					if(tp.Dicts[lang].ContainsKey(key))
-						doc.Add(new Field(lang, tp.Dicts[lang][key], Field.Store.YES, Field.Index.ANALYZED));
+						doc.Add(new Field(lang, tp.Dicts[lang][key], Field.Store.YES, Field.Index.NO));
 				}
+
+				if (tp.Dicts["fr"].ContainsKey(key))
+					doc.Add(new Field("fr", tp.Dicts["fr"][key], Field.Store.YES, Field.Index.ANALYZED));
 
 				writer.AddDocument(doc);
 			}
