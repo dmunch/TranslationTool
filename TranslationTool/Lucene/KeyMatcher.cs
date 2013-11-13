@@ -39,7 +39,7 @@ namespace TranslationTool.Memory
 		/// Based on the matched keys, exchanges keys in the given translaton project
 		/// </summary>
 		/// <param name="tp"></param>
-		public void ChangeKeys(TranslationProject tp)
+		public void ChangeKeys(TranslationProject tp, bool concatMultipleMatches = false)
 		{
 			int counter = 0;
 			foreach(var kvp in Matches)
@@ -60,7 +60,7 @@ namespace TranslationTool.Memory
 					{
 						lang.Add(kvp.Value, "");
 					}
-					else
+					else if(concatMultipleMatches)
 					{
 						//multiple matches found
 						//in this case we apply the special rule for lucca which consist in concetenating the strings
