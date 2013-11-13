@@ -62,8 +62,8 @@ namespace TranslationTool.IO
 			this.Ws = worksheet;
 		}
 
-		public int Columns { get { return Ws.Dimension.End.Column - Ws.Dimension.Start.Column; } }
-		public int Rows { get { return Ws.Dimension.End.Row - Ws.Dimension.Start.Row; } }
+		public int Columns { get { return Ws.Dimension.End.Column - Ws.Dimension.Start.Column + 1; } }
+		public int Rows { get { return Ws.Dimension.End.Row - Ws.Dimension.Start.Row + 1; } }
 
 		public object this[int row, int column]
 		{
