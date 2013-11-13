@@ -1,7 +1,8 @@
 ﻿using System.IO;
+using System.Collections.Generic;
 
 namespace TranslationTool.IO
-{		
+{			
 	public class XlsX
 	{
 		public static TranslationProject FromXLSX(string project, string masterLanguage, string fileName)
@@ -18,7 +19,7 @@ namespace TranslationTool.IO
 			{
 				package.Load(stream);
 				var worksheet = package.Workbook.Worksheets["Traductions"];
-				return Export.FromIWorksheet(project, masterLanguage, new OpenXmlWorksheet(worksheet));
+				return Export.FromIWorksheet(project, masterLanguage, new XlsXWorksheet(worksheet));
 			}
 		}
 
@@ -33,7 +34,7 @@ namespace TranslationTool.IO
 			using (var package = new OfficeOpenXml.ExcelPackage(newFile))
 			{
 				var worksheet = package.Workbook.Worksheets.Add("Traductions");
-				Export.ToIWorksheet(project, new OpenXmlWorksheet(worksheet));
+				Export.ToIWorksheet(project, new XlsXWorksheet(worksheet));
 
 				package.Save();				
 			}
@@ -45,7 +46,7 @@ namespace TranslationTool.IO
 			using (var package = new OfficeOpenXml.ExcelPackage(xlsStream))
 			{
 				var worksheet = package.Workbook.Worksheets.Add("Traductions");
-				Export.ToIWorksheet(project, new OpenXmlWorksheet(worksheet));
+				Export.ToIWorksheet(project, new XlsXWorksheet(worksheet));
 
 				package.Save();
 			}
@@ -54,10 +55,10 @@ namespace TranslationTool.IO
 		}				
 	}
 
-	public class OpenXmlWorksheet : IWorksheet
+	public class XlsXWorksheet : IWorksheet
 	{
 		OfficeOpenXml.ExcelWorksheet Ws;
-		public OpenXmlWorksheet(OfficeOpenXml.ExcelWorksheet worksheet)
+		public XlsXWorksheet(OfficeOpenXml.ExcelWorksheet worksheet)
 		{
 			this.Ws = worksheet;
 		}
