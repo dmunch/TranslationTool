@@ -38,7 +38,7 @@ namespace TranslationTool.IO.Collection
 					worksheet.Cells[rowCount, 0].Value = "ns:" + kvp.Key;
 					rowCount++;
 
-					rowCount = IO.Export.ToIWorksheet(kvp.Value, new OpenXmlWorksheet(worksheet), rowCount);
+					rowCount = IO.Export.ToIWorksheet(kvp.Value, new XlsXWorksheet(worksheet), rowCount);
 				}
 
 				package.Save();

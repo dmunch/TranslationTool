@@ -49,17 +49,21 @@ namespace TranslationTool.IO.Worksheets
 			set
 			{
 				row -= 1; column -= 1;
-
-				if (Cells.Count <= row)
-					while (Cells.Count <= row)
-						Cells.Add(new List<object>());
-
-				if (Cells[row].Count <= column)
-					while (Cells[row].Count <= column)
-						Cells[row].Add(new List<object>());
-
+				Resize(row, column);
 				Cells[row][column] = value;
 			}
+		}
+
+		protected void Resize(int rows, int columns)
+		{
+			if (Cells.Count <= rows)
+				while (Cells.Count <= rows)
+					Cells.Add(new List<object>());
+
+			if (Cells[rows].Count <= columns)
+				while (Cells[rows].Count <= columns)
+					Cells[rows].Add(new List<object>());
+
 		}
 	}
 }
