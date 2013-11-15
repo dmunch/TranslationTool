@@ -5,7 +5,7 @@ namespace TranslationTool.IO
 {
 	class Xls
 	{
-		protected static Workbook _ToXLS(TranslationProject project)
+		protected static Workbook _ToXLS(TranslationModule project)
 		{
 			Worksheet worksheet = new Worksheet("Traductions");
 			Export.ToIWorksheet(project, new XlsWorksheet(worksheet));
@@ -16,7 +16,7 @@ namespace TranslationTool.IO
 			return workbook;
 		}
 
-		public static void ToXLS(TranslationProject project, string fileName)
+		public static void ToXLS(TranslationModule project, string fileName)
 		{
 			FileInfo newFile = new FileInfo(fileName);
 			if (newFile.Exists)
@@ -27,7 +27,7 @@ namespace TranslationTool.IO
 			_ToXLS(project).Save(fileName);
 		}
 
-		public static Stream ToXLS(TranslationProject project)
+		public static Stream ToXLS(TranslationModule project)
 		{
 			MemoryStream stream = new MemoryStream();
 			_ToXLS(project).SaveToStream(stream);

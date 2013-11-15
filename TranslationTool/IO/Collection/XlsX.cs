@@ -6,7 +6,7 @@ namespace TranslationTool.IO.Collection
 {
 	class XlsX
 	{				
-		public void ToOneXLSX(TranslationProjectCollection tpc, string targetDir)
+		public void ToOneXLSX(TranslationModuleCollection tpc, string targetDir)
 		{
 			string fileName = @"\";
 			foreach (var kvp in tpc.Projects)

@@ -9,7 +9,7 @@ namespace TranslationTool.IO
 {
 	public class TMX
 	{
-		public static void ToTMX(TranslationProject tp, string targetDir)
+		public static void ToTMX(TranslationModule tp, string targetDir)
 		{
 			var tmx = new tmx();
 			var tus = new List<tu>();

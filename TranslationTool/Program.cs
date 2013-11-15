@@ -159,7 +159,7 @@ namespace TranslationTool
 			//            allSync["en"].Print("en", sw);
 		}
 
-		public static void PatchFromTwoRevision(TranslationProject r1, TranslationProject r2, TranslationProject toPatch)
+		public static void PatchFromTwoRevision(TranslationModule r1, TranslationModule r2, TranslationModule toPatch)
 		{
 			var diff = r1.Diff(r2);
 			toPatch.Patch(diff);

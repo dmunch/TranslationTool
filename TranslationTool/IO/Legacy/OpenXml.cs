@@ -268,7 +268,7 @@ namespace TranslationTool.IO
 			return cell;
 		}
 
-		public static Stream ToXLSX2(TranslationProject project)
+		public static Stream ToXLSX2(TranslationModule project)
 		{
 			MemoryStream xlsStream = new MemoryStream();
 
@@ -327,7 +327,7 @@ namespace TranslationTool.IO
 
 
 
-		public static Stream ToXLSX(TranslationProject project)
+		public static Stream ToXLSX(TranslationModule project)
 		{
 			MemoryStream xlsStream = new MemoryStream();
 

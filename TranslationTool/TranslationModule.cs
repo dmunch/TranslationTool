@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
+using TranslationTool.Helpers;
 
 namespace TranslationTool
 {
@@ -30,25 +30,25 @@ namespace TranslationTool
 		}
 	}
 
-	public class TranslationProjectBase
+	public class TranslationModuleBase
 	{
 		public IEnumerable<string> Languages;
 		public string MasterLanguage { get; protected set; }
 		public string Project { get; set; }
 
-		public TranslationProjectBase(TranslationProjectBase other)
+		public TranslationModuleBase(TranslationModuleBase other)
 		{
 			this.MasterLanguage = other.MasterLanguage;
 			this.Languages = other.Languages;
 			this.Project = other.Project;
 		}
 
-		public TranslationProjectBase(string project, string masterLanguage)
+		public TranslationModuleBase(string project, string masterLanguage)
 			: this(project, masterLanguage, new string[] { "en", "de", "es", "fr", "it", "nl" })
 		{
 		}
 
-		public TranslationProjectBase(string project, string masterLanguage, string[] languages)
+		public TranslationModuleBase(string project, string masterLanguage, string[] languages)
 		{
 			this.MasterLanguage = masterLanguage;
 			this.Languages = languages;
@@ -65,11 +65,11 @@ namespace TranslationTool
 		}		
 	}
 
-	public class TranslationProjectDiff : TranslationProjectBase
+	public class TranslationModuleDiff : TranslationModuleBase
 	{
 		public Dictionary<string, DictDiff> DiffPerLanguage { get; protected set; }
 
-		public TranslationProjectDiff(TranslationProjectBase other, Dictionary<string, DictDiff> _diffPerLanguage) : base(other)
+		public TranslationModuleDiff(TranslationModuleBase other, Dictionary<string, DictDiff> _diffPerLanguage) : base(other)
 		{
 			this.DiffPerLanguage = _diffPerLanguage;
 		}
@@ -83,7 +83,7 @@ namespace TranslationTool
 		}
 	}
 
-    public class TranslationProject : TranslationProjectBase
+    public class TranslationModule : TranslationModuleBase
     {
         public Dictionary<string, Dictionary<string, string>> Dicts;
 		public Dictionary<string, string> Comments;
@@ -96,13 +96,13 @@ namespace TranslationTool
 			}
 		}
 
-        public TranslationProject(string project, string masterLanguage) : base(project, masterLanguage)
+        public TranslationModule(string project, string masterLanguage) : base(project, masterLanguage)
         {
 			this.Dicts = new Dictionary<string, Dictionary<string, string>>();
 			this.Comments = new Dictionary<string, string>();
         }
 
-        public TranslationProject(string project, string masterLanguage, string[] languages) : base(project, masterLanguage, languages)
+        public TranslationModule(string project, string masterLanguage, string[] languages) : base(project, masterLanguage, languages)
         {
             this.Dicts = new Dictionary<string, Dictionary<string, string>>();            
 			this.Comments = new Dictionary<string, string>();
@@ -200,7 +200,7 @@ namespace TranslationTool
 			}
 		}
 
-        public TranslationProjectDiff SyncWith(TranslationProject tp)
+        public TranslationModuleDiff SyncWith(TranslationModule tp)
         {
 			var diff = Diff(tp);
 			Patch(diff);
@@ -208,7 +208,7 @@ namespace TranslationTool
 			return diff;
 		}
 
-		public TranslationProjectDiff Diff(TranslationProject tp)
+		public TranslationModuleDiff Diff(TranslationModule tp)
 		{
 			var allSync = new Dictionary<string, DictDiff>();
 
@@ -218,10 +218,10 @@ namespace TranslationTool
 				allSync.Add(l, DictDiff.Diff(Dicts[l], tp.Dicts[l]));				
 			}
 
-			return new TranslationProjectDiff(this, allSync);
+			return new TranslationModuleDiff(this, allSync);
 		}
 
-		public void Patch(TranslationProjectDiff tpDiff)
+		public void Patch(TranslationModuleDiff tpDiff)
 		{
 			foreach (var l in Languages)
 			{

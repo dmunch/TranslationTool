@@ -18,10 +18,10 @@ namespace TranslationTool.IO
 	}
 	public static class Export
 	{
-		public static TranslationProject FromIWorksheet(string project, string masterLanguage, IWorksheet worksheet)
+		public static TranslationModule FromIWorksheet(string project, string masterLanguage, IWorksheet worksheet)
 		{
 			// open the file "data.csv" which is a CSV file with headers
-			TranslationProject tp = null;
+			TranslationModule tp = null;
 			bool createMissingKeys = false;
 
 			Dictionary<int, string> languages = new Dictionary<int, string>();
@@ -40,7 +40,7 @@ namespace TranslationTool.IO
 
 				languages.Add(c, language);
 			}
-			tp = new TranslationProject(project, masterLanguage, languages.Values.ToArray());
+			tp = new TranslationModule(project, masterLanguage, languages.Values.ToArray());
 
 			for (int r = 1; r < worksheet.Rows; r++)
 			{
@@ -77,7 +77,7 @@ namespace TranslationTool.IO
 			return tp;
 		}
 
-		public static int ToIWorksheet(TranslationProject project, IWorksheet worksheet, int rowStart = 0)
+		public static int ToIWorksheet(TranslationModule project, IWorksheet worksheet, int rowStart = 0)
 			{
 				int columnCounter = 0;
 				int rowCounter = rowStart;

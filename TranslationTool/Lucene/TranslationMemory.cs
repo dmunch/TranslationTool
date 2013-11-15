@@ -25,15 +25,15 @@ namespace TranslationTool.Memory
 	public class TranslationMemory
 	{
 		protected Lucene.Net.Store.Directory Index;
-		protected TranslationProject TranslationProject;
+		protected TranslationModule TranslationProject;
 
-		public TranslationMemory(TranslationProject tp)
+		public TranslationMemory(TranslationModule tp)
 		{
-			this.Index = TranslationMemoryHelpers.BuildTranslationProjectIndex(new TranslationProject[] {tp});
+			this.Index = TranslationMemoryHelpers.BuildTranslationProjectIndex(new TranslationModule[] {tp});
 			this.TranslationProject = tp;
 		}
 
-		public TranslationMemory(TranslationProjectCollection tpCollection)
+		public TranslationMemory(TranslationModuleCollection tpCollection)
 		{
 			Index = TranslationMemoryHelpers.BuildTranslationProjectIndex(tpCollection.Projects.Values);
 			this.TranslationProject = tpCollection.Projects.First().Value;
@@ -67,7 +67,7 @@ namespace TranslationTool.Memory
 			}
 		}
 				
-		public static Lucene.Net.Store.Directory BuildTranslationProjectIndex(IEnumerable<TranslationProject> tps)
+		public static Lucene.Net.Store.Directory BuildTranslationProjectIndex(IEnumerable<TranslationModule> tps)
 		{
 			var tmp = TempPath;
 			var dir = Lucene.Net.Store.FSDirectory.Open(tmp);
@@ -124,7 +124,7 @@ namespace TranslationTool.Memory
 			return results;
 		}
 
-		private static void IndexDocument(IndexWriter writer, TranslationProject tp)
+		private static void IndexDocument(IndexWriter writer, TranslationModule tp)
 		{
 			foreach (var key in tp.Keys)
 			{

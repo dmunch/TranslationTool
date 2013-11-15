@@ -12,7 +12,7 @@ namespace TranslationTool.Memory
 	{
 		public Dictionary<string, string> Matches { get; protected set; }
 		public List<string> NoMatches { get; protected set; }
-		public KeyMatcher(TranslationProject tpBase, TranslationProject tp, string masterLanguage = null)
+		public KeyMatcher(TranslationModule tpBase, TranslationModule tp, string masterLanguage = null)
 		{
 			var memory = new TranslationMemory(tpBase);
 			Matches = new Dictionary<string,string>();
@@ -39,7 +39,7 @@ namespace TranslationTool.Memory
 		/// Based on the matched keys, exchanges keys in the given translaton project
 		/// </summary>
 		/// <param name="tp"></param>
-		public void ChangeKeys(TranslationProject tp, bool concatMultipleMatches = false)
+		public void ChangeKeys(TranslationModule tp, bool concatMultipleMatches = false)
 		{
 			int counter = 0;
 			foreach(var kvp in Matches)

@@ -7,9 +7,9 @@ namespace TranslationTool.IO.Collection
 {
 	class Xls
 	{
-		public static IEnumerable<KeyValuePair<string, TranslationProject>> ToDir(TranslationProjectCollection tpc, string targetDir)
+		public static IEnumerable<KeyValuePair<string, TranslationModule>> ToDir(TranslationModuleCollection tpc, string targetDir)
 		{
-			Dictionary<string, TranslationProject> fileNames = new Dictionary<string, TranslationProject>();
+			Dictionary<string, TranslationModule> fileNames = new Dictionary<string, TranslationModule>();
 			foreach (var kvp in tpc.Projects)
 			{
 				var fileName = targetDir + @"\" + kvp.Key + ".xls";

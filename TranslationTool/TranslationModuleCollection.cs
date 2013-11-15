@@ -7,9 +7,9 @@ using TranslationTool.IO;
 
 namespace TranslationTool
 {
-    public class TranslationProjectCollection
+    public class TranslationModuleCollection
     {
-		public Dictionary<string, TranslationProject> Projects { get; set; }
+		public Dictionary<string, TranslationModule> Projects { get; set; }
 		public IEnumerable<string> ProjectNames
 		{
 			get
@@ -18,17 +18,17 @@ namespace TranslationTool
 			}
 		}
 
-		public TranslationProjectCollection(Dictionary<string, TranslationProject> dict)
+		public TranslationModuleCollection(Dictionary<string, TranslationModule> dict)
 		{
 			this.Projects = dict;
 		}
 
-        public TranslationProjectCollection()
+        public TranslationModuleCollection()
         {
-            this.Projects = new Dictionary<string, TranslationProject>();
+            this.Projects = new Dictionary<string, TranslationModule>();
         }
                        
-        public void SyncWith(TranslationProjectCollection tpc)
+        public void SyncWith(TranslationModuleCollection tpc)
         {
             foreach (var tp in Projects)
                 if(tpc.Projects.ContainsKey(tp.Key))

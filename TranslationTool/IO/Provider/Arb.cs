@@ -6,7 +6,7 @@ namespace TranslationTool.IO
 {
 	public class Arb
 	{
-		public static void ToArb(TranslationProject tp, string targetDir)
+		public static void ToArb(TranslationModule tp, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
 
@@ -20,7 +20,7 @@ namespace TranslationTool.IO
 			}*/
 		}
 
-		public static void ToArbAll(TranslationProject tp, string targetDir)
+		public static void ToArbAll(TranslationModule tp, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
 		

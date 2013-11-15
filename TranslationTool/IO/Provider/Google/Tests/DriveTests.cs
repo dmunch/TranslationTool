@@ -16,7 +16,7 @@ namespace TranslationTool.IO.Google.Tests
 		}
 
 
-		public static void Upload(TranslationProject tp)
+		public static void Upload(TranslationModule tp)
 		{
 			/*
 			var xlsStream = IO.XlsX.ToXLSX(tp);

@@ -5,7 +5,7 @@ namespace TranslationTool.IO
 {			
 	public class XlsX
 	{
-		public static TranslationProject FromXLSX(string project, string masterLanguage, string fileName)
+		public static TranslationModule FromXLSX(string project, string masterLanguage, string fileName)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			{
@@ -13,7 +13,7 @@ namespace TranslationTool.IO
 			}
 		}
 
-		public static TranslationProject FromXLSX(string project, string masterLanguage, Stream stream)
+		public static TranslationModule FromXLSX(string project, string masterLanguage, Stream stream)
 		{			
 			using (var package = new OfficeOpenXml.ExcelPackage())
 			{
@@ -23,7 +23,7 @@ namespace TranslationTool.IO
 			}
 		}
 
-		public static void ToXLSX(TranslationProject project, string fileName)
+		public static void ToXLSX(TranslationModule project, string fileName)
 		{
 			FileInfo newFile = new FileInfo(fileName);
 			if (newFile.Exists)
@@ -40,7 +40,7 @@ namespace TranslationTool.IO
 			}
 		}
 
-		public static Stream ToXLSX(TranslationProject project)
+		public static Stream ToXLSX(TranslationModule project)
 		{			
 			MemoryStream xlsStream = new MemoryStream();
 			using (var package = new OfficeOpenXml.ExcelPackage(xlsStream))

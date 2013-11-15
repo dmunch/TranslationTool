@@ -9,7 +9,7 @@ namespace TranslationTool.IO
 {
 	public class GDataSpreadSheet
 	{
-		public static TranslationProject FromGDoc(string userName, string password, string project)
+		public static TranslationModule FromGDoc(string userName, string password, string project)
 		{
 			var g = new GDataSpreadSheet(userName, password);
 
@@ -17,7 +17,7 @@ namespace TranslationTool.IO
 			return g.FromWorksheet(project, ws);
 		}
 
-		public static TranslationProject FromGDoc(string project)
+		public static TranslationModule FromGDoc(string project)
 		{
 			var g = new GDataSpreadSheet();
 
@@ -68,7 +68,7 @@ namespace TranslationTool.IO
 			return worksheet;
 		}
 		
-		protected TranslationProject FromWorksheet(string project, WorksheetEntry worksheet)
+		protected TranslationModule FromWorksheet(string project, WorksheetEntry worksheet)
 		{
 			// Define the URL to request the list feed of the worksheet.
 			AtomLink listFeedLink = worksheet.Links.FindService(GDataSpreadsheetsNameTable.ListRel, null);
@@ -117,7 +117,7 @@ namespace TranslationTool.IO
 
 			}
 
-			var tp = new TranslationProject(project, "en", languages.ToArray());
+			var tp = new TranslationModule(project, "en", languages.ToArray());
 			tp.Dicts = dicts;
 			tp.Comments = comments;
 

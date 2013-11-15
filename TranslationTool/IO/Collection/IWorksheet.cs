@@ -7,7 +7,7 @@ namespace TranslationTool.IO.Collection
 {
 	class Export
 	{
-		public void ToIWorksheet(TranslationProjectCollection tpc, IWorksheet worksheet)
+		public void ToIWorksheet(TranslationModuleCollection tpc, IWorksheet worksheet)
 		{
 			//write header
 			int columnCount = 1;

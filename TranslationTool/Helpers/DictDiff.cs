@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace TranslationTool
+namespace TranslationTool.Helpers
 {
 	public class DictDiff
 	{

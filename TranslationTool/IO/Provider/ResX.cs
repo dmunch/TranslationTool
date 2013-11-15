@@ -6,9 +6,9 @@ namespace TranslationTool.IO
 {
 	public class ResX
 	{
-		public static TranslationProject FromResX(string dir, string project, string masterLanguage)
+		public static TranslationModule FromResX(string dir, string project, string masterLanguage)
 		{
-			var tp = new TranslationProject(project, masterLanguage);
+			var tp = new TranslationModule(project, masterLanguage);
 
 			tp.Dicts.Add(masterLanguage, GetDictFromResX(dir + project + ".resx"));
 
@@ -41,7 +41,7 @@ namespace TranslationTool.IO
 			return stringDict;
 		}
 
-		public static void ToResX(TranslationProject tp, string targetDir)
+		public static void ToResX(TranslationModule tp, string targetDir)
 		{
 			ToResX(tp.Dicts[tp.MasterLanguage], targetDir + tp.Project + ".resx");
 			foreach (var l in tp.Languages)
@@ -52,7 +52,7 @@ namespace TranslationTool.IO
 				if (tp.Dicts.ContainsKey(l))
 					dict = tp.Dicts[l];
 				else
-					dict = TranslationProject.EmptyFromTemplate(tp.Dicts[tp.MasterLanguage]);
+					dict = TranslationModule.EmptyFromTemplate(tp.Dicts[tp.MasterLanguage]);
 
 				ToResX(dict, targetDir + tp.Project + "." + l + ".resx");
 			}

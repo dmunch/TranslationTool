@@ -8,10 +8,10 @@ namespace TranslationTool.IO
 {
 	public class CSV
 	{
-		public static TranslationProject FromCSV(string file, string project, string masterLanguage, bool createMissingKeys = true)
+		public static TranslationModule FromCSV(string file, string project, string masterLanguage, bool createMissingKeys = true)
 		{
 			// open the file "data.csv" which is a CSV file with headers
-			TranslationProject tp = null;
+			TranslationModule tp = null;
 
 			List<string> languages = new List<string>();
 
@@ -35,7 +35,7 @@ namespace TranslationTool.IO
 
 					languages.Add(language);
 				}
-				tp = new TranslationProject(project, masterLanguage, languages.ToArray());
+				tp = new TranslationModule(project, masterLanguage, languages.ToArray());
 
 				while (csv.ReadNextRecord())
 				{
@@ -70,7 +70,7 @@ namespace TranslationTool.IO
 			return tp;
 		}
 
-		public static void ToCSV(TranslationProject project, string targetDir)
+		public static void ToCSV(TranslationModule project, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
 			ToCSV(project, sb, true);
@@ -81,7 +81,7 @@ namespace TranslationTool.IO
 			}
 		}
 
-		public static void ToCSV(TranslationProject project, StringBuilder sb, bool addHeader = true)
+		public static void ToCSV(TranslationModule project, StringBuilder sb, bool addHeader = true)
 		{
 			if (addHeader)
 			{
