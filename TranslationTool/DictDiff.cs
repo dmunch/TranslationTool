@@ -83,6 +83,15 @@ namespace TranslationTool
 		{
 			var toSync = new DictDiff();
 
+			/*
+			if (d1 == null)
+			{
+				foreach (var kvp in d2)
+				{
+					toSync.New.Add(kvp.Key, kvp.Value);				
+				}
+			}
+			*/
 			foreach (var kvp in d1)
 			{
 				if (d2.ContainsKey(kvp.Key) && kvp.Value != d2[kvp.Key] && d2[kvp.Key].Trim() != "")
