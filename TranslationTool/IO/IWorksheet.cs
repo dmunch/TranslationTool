@@ -94,8 +94,7 @@ namespace TranslationTool.IO
 				}
 
 				worksheet[rowCounter++, 0] = "ns:" + project.Name;
-
-				var byLanguageAndKey = project.ByLanguageAndKey;
+				
 				var byKey = project.ByKey;
 				foreach (var key in project.Keys)
 				{

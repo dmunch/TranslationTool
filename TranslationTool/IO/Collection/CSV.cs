@@ -11,7 +11,7 @@ namespace TranslationTool.IO.Collection
 			var tpc = new TranslationModuleCollection();
 
 
-			foreach (var pName in tpc.ProjectNames)
+			foreach (var pName in tpc.ModuleNames)
 				tpc.Projects.Add(pName, IO.CSV.FromCSV(fileName, pName, masterLanguage));
 
 			return tpc;

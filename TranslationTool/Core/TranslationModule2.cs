@@ -63,13 +63,12 @@ namespace TranslationTool
 		}
 	}
 
-	public class TranslationModule : TranslationModuleBase
+	public class TranslationModule : TranslationModuleBase, TranslationTool.ITranslationModule
 	{
-		public List<Segment> Segments { get; set; }
+		public IEnumerable<Segment> Segments { get { return _Segments; } }
 
+		protected List<Segment> _Segments { get; set; }
 
-		//public Dictionary<string, Dictionary<string, string>> Dicts;
-		//public Dictionary<string, string> Comments;
 		public IEnumerable<string> Keys
 		{
 			get
@@ -81,33 +80,27 @@ namespace TranslationTool
 		public TranslationModule(string project, string masterLanguage)
 			: base(project, masterLanguage)
 		{
-			this.Segments = new List<Segment>();
+			this._Segments = new List<Segment>();
 		}
 
 		public TranslationModule(string project, string masterLanguage, string[] languages)
 			: base(project, masterLanguage, languages)
 		{
-			this.Segments = new List<Segment>();
+			this._Segments = new List<Segment>();
 		}
 
 		public void Add(Segment s)
 		{
-			this.Segments.Add(s);
+			this._Segments.Add(s);
 		}
 
 		public void Add(IEnumerable<Segment> s)
 		{
-			this.Segments.AddRange(s);
+			this._Segments.AddRange(s);
 		}
 
-		public IEnumerable<SegmentsByKey> ByKey1
-		{
-			get
-			{
-				return Segments.ByKey().Select(s => new SegmentsByKey(s.Key, s));
-			}
-		}
 
+		/*
 		public IDictionary<string, Dictionary<string, Segment>> ByLanguageAndKey
 		{
 			get
@@ -117,7 +110,7 @@ namespace TranslationTool
 				return t;
 			}
 		}
-
+		*/
 
 		public ILookup<string, Segment> ByKey
 		{
@@ -152,7 +145,7 @@ namespace TranslationTool
 		public void Remove(IEnumerable<Segment> segments)
 		{
 			foreach (var s in segments.ToList())
-				this.Segments.Remove(s);
+				this._Segments.Remove(s);
 		}
 
 		public void RemoveEmptyKeys()

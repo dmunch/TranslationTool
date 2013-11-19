@@ -5,27 +5,6 @@ using System.Text;
 
 namespace TranslationTool
 {
-	class XlsXTranslationProject : ITranslationProject
-	{
-
-		public TranslationModule this[string moduleName]
-		{
-			get
-			{
-				throw new NotImplementedException();
-			}
-			set
-			{
-				throw new NotImplementedException();
-			}
-		}
-
-		public IEnumerable<string> Modules
-		{
-			get { throw new NotImplementedException(); }
-		}
-	}
-
 	class ResXTranslationProject : ITranslationProject
 	{
 		TranslationModuleCollection Collection;
@@ -36,7 +15,7 @@ namespace TranslationTool
 		{
 			this.Collection = new TranslationModuleCollection();
 
-			this.Modules = IO.Collection.ResX.GetModuleNames(directory);
+			this.ModuleNames= IO.Collection.ResX.GetModuleNames(directory);
 			this.MasterLanguage = masterLanguage;
 		}
 
@@ -44,7 +23,7 @@ namespace TranslationTool
 		{
 			get
 			{
-				if (!Collection.Projects.ContainsKey(moduleName) && Modules.Contains(moduleName))
+				if (!Collection.Projects.ContainsKey(moduleName) && ModuleNames.Contains(moduleName))
 				{
 					Collection.Projects.Add(moduleName, IO.ResX.FromResX(this.Directory, moduleName, this.MasterLanguage));
 				}
@@ -63,6 +42,23 @@ namespace TranslationTool
 			}
 		}
 
-		public IEnumerable<string> Modules { get; set;}
+		public IEnumerable<string> ModuleNames { get; set;}
+		public IEnumerable<TranslationModule> Modules
+		{
+			get
+			{
+				return ModuleNames.Select(name => this[name]);
+			}
+		}
+
+		public void Add(TranslationModule module)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SyncWith(ITranslationProject other)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
