@@ -25,6 +25,36 @@ namespace TranslationTool
 		{
 			return segments.ToLookup(s => s.Key);
 		}
+
+		/// <summary>
+		/// Proposes a resource key based on a translation message
+		/// </summary>
+		/// <param name="sentence"></param>
+		/// <returns></returns>
+		public static string KeyProposal(this ITranslationModule module, string sentence)
+		{
+			var words = sentence.Split(' ');
+			StringBuilder keyBuilder = new StringBuilder();
+			int wordCount = 0;
+			while (keyBuilder.Length / 2 < Math.Min(words.Length, 3))
+			{
+				var word = words[wordCount++].ToUpper();
+				if (word.Contains("[") || word.Contains("]") || word.Contains("{") || word.Contains("}")) continue;
+
+				keyBuilder.Append(word);
+				keyBuilder.Append('_');
+			}
+			string keyBase = keyBuilder.ToString().Replace(' ', '_').TrimEnd(' ', '_');
+			string key = keyBase;
+			int keyCounter = 1;
+
+			while (module.ContainsKey(key))
+			{
+				key = keyBase + "_" + (keyCounter++).ToString();
+			}
+
+			return key;
+		}
 	}
 	
 	public class TranslationModule : TranslationModuleBase, TranslationTool.ITranslationModule
@@ -62,19 +92,6 @@ namespace TranslationTool
 		{
 			this._Segments.AddRange(s);
 		}
-
-
-		/*
-		public IDictionary<string, Dictionary<string, Segment>> ByLanguageAndKey
-		{
-			get
-			{
-				var t =  ByLanguage.ToDictionary(bl => bl.Key, 
-					                           bl => bl.ToDictionary(s => s.Key));
-				return t;
-			}
-		}
-		*/
 
 		public ILookup<string, Segment> ByKey
 		{
@@ -164,37 +181,7 @@ namespace TranslationTool
 				diff.Value.Patch(_Segments, byLanguage[diff.Key]);
 			}
 		}
-
-		/// <summary>
-		/// Proposes a resource key based on a translation message
-		/// </summary>
-		/// <param name="sentence"></param>
-		/// <returns></returns>
-		public string KeyProposal(string sentence)
-		{
-			var words = sentence.Split(' ');
-			StringBuilder keyBuilder = new StringBuilder();
-			int wordCount = 0;
-			while (keyBuilder.Length / 2 < Math.Min(words.Length, 3))
-			{
-				var word = words[wordCount++].ToUpper();
-				if (word.Contains("[") || word.Contains("]") || word.Contains("{") || word.Contains("}")) continue;
-
-				keyBuilder.Append(word);
-				keyBuilder.Append('_');
-			}
-			string keyBase = keyBuilder.ToString().Replace(' ', '_').TrimEnd(' ', '_');
-			string key = keyBase;
-			int keyCounter = 1;
-
-			while (this.ContainsKey(key))
-			{
-				key = keyBase + "_" + (keyCounter++).ToString();
-			}
-
-			return key;
-		}
-
+		
 		public static void PrintSynced(Dictionary<string, string> synced, string language)
 		{
 			Console.WriteLine("Synced {0} rows in {1}.", synced.Count, language);
