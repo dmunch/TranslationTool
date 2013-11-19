@@ -30,7 +30,10 @@ namespace TranslationTool
 			this.Text = other.Text;
 			this.Key = other.Key;
 		}
-
+		public override string ToString()
+		{
+			return "(" + Language + ") " + Key + ": " + Text;
+		}
 		public static IEnumerable<Segment> FromDict(string language, IDictionary<string, string> dict)
 		{
 			foreach (var kvp in dict)
