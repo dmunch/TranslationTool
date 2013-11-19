@@ -158,10 +158,10 @@ namespace TranslationTool
 
 		public void Patch(TranslationModuleDiff tpDiff)
 		{
-			foreach (var l in Segments.ByLanguage())
+			var byLanguage = Segments.ByLanguage();
+			foreach (var diff in tpDiff.DiffPerLanguage)
 			{
-				if (!tpDiff.DiffPerLanguage.ContainsKey(l.Key)) continue;
-				tpDiff.DiffPerLanguage[l.Key].Patch(l);
+				diff.Value.Patch(_Segments, byLanguage[diff.Key]);
 			}
 		}
 

@@ -9,10 +9,10 @@ namespace TranslationTool.Helpers
 {
 	public class StringContentDiff<T, TKey> :  GeneralDiff<T, TKey, string>
 	{
-		public StringContentDiff(Func<T, TKey> KeySelector, Func<T, string> contentSelector) 
+		public StringContentDiff(Expression<Func<T, TKey>> KeySelector, Expression<Func<T, string>> contentSelector) 
 			:base(KeySelector, contentSelector)
 		{
-		
+			this.EqualityComparer = (s1, s2) => s1 == s2; //&& !string.IsNullOrWhiteSpace(s1) && !string.IsNullOrWhiteSpace(s2);
 		}
 
 		public void PrintDiff(TextWriter os = null)
@@ -44,19 +44,29 @@ namespace TranslationTool.Helpers
 
 		protected Func<T, TKey> KeySelector;
 		public Func<T, TContent> ContentSelector;
-		protected IEqualityComparer<TContent> EqualityComparer;
+		protected Action<T, TContent> ContentSetter;
 
-		public GeneralDiff(Func<T, TKey> KeySelector, Func<T, TContent> contentSelector)
+		//protected IEqualityComparer<TContent> EqualityComparer;
+		protected Func<TContent, TContent, bool> EqualityComparer;
+
+		public GeneralDiff(Expression<Func<T, TKey>> _KeySelector, Expression<Func<T, TContent>> contentSelector)
 		{
-			this.KeySelector = KeySelector;
-			this.ContentSelector = contentSelector;
+			this.KeySelector = _KeySelector.Compile();
+			this.ContentSelector = contentSelector.Compile();
+
+			var newValue = Expression.Parameter(contentSelector.Body.Type);
+			var assign = Expression.Lambda<Action<T, TContent>>(
+								Expression.Assign(contentSelector.Body, newValue),
+								contentSelector.Parameters[0], newValue);
+
+			ContentSetter = assign.Compile();
 		}
 
 
 		public void Diff(IEnumerable<T> list1, IEnumerable<T> list2)
 		{
 			//Diff(new LambdaComparer<T, TKey>(KeySelector));
-			IEqualityComparer<T> equalityComparer = null;
+			//IEqualityComparer<T> equalityComparer = null;
 			var dDiff = new DictDiff();
 			
 			this.Orig.Clear();
@@ -75,12 +85,10 @@ namespace TranslationTool.Helpers
 				}
 			}
 			*/
-
-
 			foreach (var kvp in dict1)
 			{
-				//if (dict2.ContainsKey(kvp.Key) && equalityComparer.Equals(kvp.Value, dict2[kvp.Key]))
-				if (dict2.ContainsKey(kvp.Key) && ContentSelector(kvp.Value).Equals(ContentSelector(dict2[kvp.Key])))
+				if (dict2.ContainsKey(kvp.Key) && !EqualityComparer(ContentSelector(kvp.Value), ContentSelector(dict2[kvp.Key])))
+				//if (dict2.ContainsKey(kvp.Key) && !ContentSelector(kvp.Value).Equals(ContentSelector(dict2[kvp.Key])))
 				{
 					Updated.Add(kvp.Key, dict2[kvp.Key]);
 					Orig.Add(kvp.Key, kvp.Value);
@@ -88,7 +96,7 @@ namespace TranslationTool.Helpers
 			}
 
 			//check new keys  
-			foreach (var kvp in dict1)
+			foreach (var kvp in dict2)
 			{
 				if (!dict1.ContainsKey(kvp.Key))
 				{
@@ -117,31 +125,33 @@ namespace TranslationTool.Helpers
 			}
 		}
 
-		public void Patch(IDictionary<TKey, T> d)
+		public void Patch(IList<T> listToPatch, IEnumerable<T> lookup)
 		{
-			 GeneralDiff<T, TKey, TContent>.Patch(d, this);
+			this.Patch(listToPatch, listToPatch.ToDictionary(KeySelector));
 		}
 
-		public void Patch(IEnumerable<T> d)
+		public void Patch(IList<T> listToPatch)
 		{
-			Patch(d.ToDictionary(KeySelector));
+			this.Patch(listToPatch, listToPatch);
 		}
 
-		public static void Patch(IDictionary<TKey, T> d, GeneralDiff<T, TKey, TContent> toSync)
-		{
-			foreach (var kvp in toSync.New)
+		public void Patch(IList<T> listToPatch, IDictionary<TKey, T> lookup)
+		{			
+			var diff = this;
+
+			foreach (var kvp in diff.New)
 			{
-				if (!d.ContainsKey(kvp.Key))
+				if (!lookup.ContainsKey(kvp.Key))
 				{
-					d.Add(kvp.Key, kvp.Value);
+					listToPatch.Add(kvp.Value);
 				}
 			}
 
-			foreach (var kvp in toSync.Updated)
+			foreach (var kvp in diff.Updated)
 			{
-				d[kvp.Key] = kvp.Value;
+				ContentSetter(lookup[kvp.Key],  ContentSelector(kvp.Value));
 			}
-		}
+		}		
 	}
 
 	public class DictDiff
