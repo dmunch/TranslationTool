@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using LumenWorks.Framework.IO.Csv;
 using System;
@@ -52,17 +53,25 @@ namespace TranslationTool.IO
 						}
 
 						if (!string.IsNullOrWhiteSpace(key))
+						{
 							for (int i = 1; i < fieldCount; i++)
 							{
 								if (i != commentColumn)
 								{
-									tp.Dicts[headers[i].ToLower()].Add(key, csv[i]);
-								}
-								else
-								{
-									tp.Comments.Add(key, csv[i]);
+									//tp.Dicts[headers[i].ToLower()].Add(key, csv[i]);
+									tp.Add(new Segment(headers[i].ToLower(), key, csv[i]));
 								}
 							}
+							if (commentColumn != -1)
+							{ 
+								foreach(var seg in tp.ByKey[key])								
+								{
+									seg.Comment = csv[commentColumn];
+								}
+							}
+						}
+							
+							
 					}
 				}
 			}
@@ -75,7 +84,7 @@ namespace TranslationTool.IO
 			StringBuilder sb = new StringBuilder();
 			ToCSV(project, sb, true);
 
-			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project.Project + ".csv", false, Encoding.UTF8))
+			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + project.Name + ".csv", false, Encoding.UTF8))
 			{
 				outfile.Write(sb.ToString());
 			}
@@ -93,13 +102,16 @@ namespace TranslationTool.IO
 				}
 				sb.AppendLine();
 			}
+
+			var byKey = project.ByKey;
 			foreach (var key in project.Keys)
 			{
 				sb.Append(key).Append(";");
 				foreach (var l in project.Languages)
 				{
 					sb.Append("'");
-					sb.Append(project.Dicts[l].ContainsKey(key) ? project.Dicts[l][key] : "");
+					var seg = byKey[key].FirstOrDefault(s => s.Language == l);
+					sb.Append(seg != null ? seg.Text : "");
 					sb.Append("';");
 				}
 

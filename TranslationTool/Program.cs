@@ -15,20 +15,30 @@ namespace TranslationTool
 		static string testDir = @"D:\Users\login\Documents\i18n\XlsxTest";
         static void Main(string[] args)
         {
+			/*
+			List<Segment> test = new List<Segment>();
+			test.Add(new Segment("en", "aa", "hallo"));
+			test.Add(new Segment("en", "bb", "callo"));
+			test.Add(new Segment("de", "aa", "dallo"));
+			test.Add(new Segment("de", "bb", "kallo"));
+
+			var l = test.ToDoubleLookup(s => s.Key, s => s.Language);
+			return; 
+			*/
 			//SyncWithoutKey2();
 			//SyncWithoutKeyAnnulerUneDemande();
 			//Console.ReadLine();
 			//return;
 
-			SyncGoogle("Cleemy-SEPA", "WEXPENSESSEPA"); return;
+			//SyncGoogle("Cleemy-SEPA", "WEXPENSESSEPA"); return;
 			//SyncGoogle("WFIGGO_BUGS", "WFIGGO");
 			//SyncGoogle("2812 - traduction Figgo Evolutions ouvrables", "WFIGGOOuvrables");
 			//SyncGoogle("Cleemy - Invités Externes", "WEXPENSESExternalAttendees");
 			//return;
-			var folder = IO.Google.Drive.FindFolder("Translation System");
+			var folder = IO.Google.Drive.FindFolder("Visual Studio Translations");
 			
 
-			//UploadAllToGdocs(folder);
+			UploadAllToGdocs(folder);
 
 			var spreadsheets = IO.Google.Drive.FindSpreadsheetFiles(folder);
 			var wfiggoXlsx = IO.Google.Drive.DownloadFile(spreadsheets.Single(ss => ss.Title == "WFIGGO"));
@@ -60,10 +70,13 @@ namespace TranslationTool
 
 			foreach (var file in IO.Collection.Xls.ToDir(t, testDir))
 			{
+				Console.Write("Processing {0} ...", file.Value.Name);
 				//I know this looks stupid, but Google Docs would'nt accept our generated XlsX files. Hence we generate Xls files and convert
 				//them to XlsX files (using LibreOffice) as a workaround... 
 				string file2 = IO.Xls.ToXlsX(file.Key);
-				IO.Google.Drive.UploadXlsx(file.Value.Project, file2, folder);
+				IO.Google.Drive.UploadXlsx(file.Value.Name, file2, folder);
+
+				Console.WriteLine("Done");
 			}
 			return;
 		}
@@ -97,6 +110,7 @@ namespace TranslationTool
 		{
 			string project = "FIPLANNING";
 			var matchBase = ResX.FromResX(directory, project, "en");
+			//matchBase.ByKey.SelectMany(k => k.First().)
 			var withKeys = XlsX.FromXLSX(project, "en", SyncPlanning);
 
 			var diff = matchBase.Diff(withKeys);
@@ -130,7 +144,7 @@ namespace TranslationTool
 			//XlsX.ToXLSX(matchBase, @"D:\Users\login\Downloads\Figgo - traductions - Actions à réaliser origkeys.xlsx");
 			var diff = matchBase.Diff(testCSVWithoutKey);
 			//diff.Print();
-			diff.DiffPerLanguage["fr"].Print("fr");
+			diff.DiffPerLanguage["fr"].Print();
 		}
 
 		static void SyncGoogle(string gdocsTitle, string resxName)
@@ -138,10 +152,10 @@ namespace TranslationTool
 			var tpGoogle = GDataSpreadSheet.FromGDoc(gdocsTitle);
 
 			var tpCurrent = ResX.FromResX(directory, resxName, "en");
-			tpGoogle.Project = tpCurrent.Project;
+			tpGoogle.Name = tpCurrent.Name;
 			var allSync = tpCurrent.SyncWith(tpGoogle);
 
-			//tpCurrent.RemoveEmptyKeys();
+			tpCurrent.RemoveEmptyKeys();
 			ResX.ToResX(tpCurrent, directory);
 		}
 

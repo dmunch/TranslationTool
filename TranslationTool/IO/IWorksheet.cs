@@ -61,6 +61,8 @@ namespace TranslationTool.IO
 					{
 						for (int c = 1; c < languages.Count + 1; c++)
 						{
+							tp.Add(new Segment(languages[c], key, (string)worksheet[r, c]));
+							/*
 							if (c != commentColumn)
 							{
 								tp.Dicts[languages[c].ToLower()].Add(key, (string) worksheet[r, c]);
@@ -68,7 +70,7 @@ namespace TranslationTool.IO
 							else
 							{
 								tp.Comments.Add(key, (string) worksheet[r, c]);
-							}
+							}*/
 					}
 					}
 				}								
@@ -91,13 +93,21 @@ namespace TranslationTool.IO
 					rowCounter++;
 				}
 
+				worksheet[rowCounter++, 0] = "ns:" + project.Name;
+
+				var byLanguageAndKey = project.ByLanguageAndKey;
+				var byKey = project.ByKey;
 				foreach (var key in project.Keys)
 				{
 					columnCounter = 0;
 					worksheet[rowCounter, columnCounter++] = key;
-
+					
+					//need to write by languages to make sure we have empty cells!!
 					foreach (var l in project.Languages)
-						worksheet[rowCounter, columnCounter++] = project.Dicts.ContainsKey(l) ? project.Dicts[l].ContainsKey(key) ? project.Dicts[l][key] : "" : "";
+					{
+						var seg = byKey[key].FirstOrDefault(s => s.Language == l);
+						worksheet[rowCounter, columnCounter++] = seg != null ? seg.Text : "";
+					}
 					rowCounter++;
 				}
 

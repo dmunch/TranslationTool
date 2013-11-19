@@ -11,10 +11,10 @@ using Lucene.Net.Store;
 
 namespace TranslationTool.Memory
 {	
-	public class QueryResult : SegmentSet
+	public class QueryResult : SegmentsByKey
 	{
 		public float Score { get; protected set; }
-		public SegmentSet Segments { get; protected set; }
+		public SegmentsByKey Segments { get; protected set; }
 
 		public QueryResult(string key, IEnumerable<Segment> segments, float score) : base(key, segments)
 		{
@@ -114,7 +114,7 @@ namespace TranslationTool.Memory
 					float score = scoreDoc.Score;
 					
 					var trads = languages.Select(l => new Segment(l, doc.Get(l)));
-					var set = new SegmentSet(doc.Get("key"), trads);
+					var set = new SegmentsByKey(doc.Get("key"), trads);
 
 					results.Add(new QueryResult(doc.Get("key"), trads, score));
 				}
@@ -126,22 +126,17 @@ namespace TranslationTool.Memory
 
 		private static void IndexDocument(IndexWriter writer, TranslationModule tp)
 		{
+			var byKey = tp.ByKey;
 			foreach (var key in tp.Keys)
 			{
 				Document doc = new Document();
 
 				doc.Add(new Field("key", key, Field.Store.YES, Field.Index.NOT_ANALYZED));
 
-				foreach (var lang in tp.Languages)
+				foreach (var seg in byKey[key])
 				{
-					if (lang == "fr") continue;
-
-					if(tp.Dicts[lang].ContainsKey(key))
-						doc.Add(new Field(lang, tp.Dicts[lang][key], Field.Store.YES, Field.Index.NO));
+					doc.Add(new Field(seg.Language, seg.Text, Field.Store.YES, seg.Language == "fr" ? Field.Index.ANALYZED : Field.Index.NO));
 				}
-
-				if (tp.Dicts["fr"].ContainsKey(key))
-					doc.Add(new Field("fr", tp.Dicts["fr"][key], Field.Store.YES, Field.Index.ANALYZED));
 
 				writer.AddDocument(doc);
 			}

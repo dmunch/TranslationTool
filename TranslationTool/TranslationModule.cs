@@ -3,57 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TranslationTool.Helpers;
+using System.Linq.Expressions;
 
 namespace TranslationTool
-{
-	public class Segment
-	{
-		public string Language { get; protected set; }
-		public string Text { get; set; }
-
-		public Segment(string lang, string t)
-		{
-			this.Language = lang;
-			this.Text = t;
-		}
-	}
-
-	public class SegmentSet
-	{
-		public string Key { get; protected set; }
-		public IEnumerable<Segment> Segments { get; protected set; }
-
-		public SegmentSet(string key, IEnumerable<Segment> segments)
-		{
-			this.Key = key;
-			this.Segments = segments;
-		}
-	}
-
+{	
 	public class TranslationModuleBase
 	{
-		public IEnumerable<string> Languages;
+		public IEnumerable<string> Languages { get; protected set; }
 		public string MasterLanguage { get; protected set; }
-		public string Project { get; set; }
+		public string Name { get; set; }
 
 		public TranslationModuleBase(TranslationModuleBase other)
 		{
 			this.MasterLanguage = other.MasterLanguage;
 			this.Languages = other.Languages;
-			this.Project = other.Project;
+			this.Name = other.Name;
 		}
 
-		public TranslationModuleBase(string project, string masterLanguage)
-			: this(project, masterLanguage, new string[] { "en", "de", "es", "fr", "it", "nl" })
+		public TranslationModuleBase(string name, string masterLanguage)
+			: this(name, masterLanguage, new string[] { "en", "de", "es", "fr", "it", "nl" })
 		{
 		}
 
-		public TranslationModuleBase(string project, string masterLanguage, string[] languages)
+		public TranslationModuleBase(string name, string masterLanguage, string[] languages)
 		{
 			this.MasterLanguage = masterLanguage;
 			this.Languages = languages;
 			
-			this.Project = project;
+			this.Name = name;
 		}
 			
 		public static void PrintSynced(Dictionary<string, string> synced, string language)
@@ -65,11 +42,14 @@ namespace TranslationTool
 		}		
 	}
 
-	public class TranslationModuleDiff : TranslationModuleBase
+#if false 
+
+	public class TranslationModuleDiff2 : TranslationModuleBase
 	{
 		public Dictionary<string, DictDiff> DiffPerLanguage { get; protected set; }
 
-		public TranslationModuleDiff(TranslationModuleBase other, Dictionary<string, DictDiff> _diffPerLanguage) : base(other)
+		public TranslationModuleDiff2(TranslationModuleBase other, Dictionary<string, DictDiff> _diffPerLanguage) 
+			: base(other)
 		{
 			this.DiffPerLanguage = _diffPerLanguage;
 		}
@@ -96,13 +76,15 @@ namespace TranslationTool
 			}
 		}
 
-        public TranslationModule(string project, string masterLanguage) : base(project, masterLanguage)
+        public TranslationModule(string project, string masterLanguage)
+			: base(project, masterLanguage)
         {
 			this.Dicts = new Dictionary<string, Dictionary<string, string>>();
 			this.Comments = new Dictionary<string, string>();
         }
 
-        public TranslationModule(string project, string masterLanguage, string[] languages) : base(project, masterLanguage, languages)
+        public TranslationModule(string project, string masterLanguage, string[] languages)
+			: base(project, masterLanguage, languages)
         {
             this.Dicts = new Dictionary<string, Dictionary<string, string>>();            
 			this.Comments = new Dictionary<string, string>();
@@ -113,11 +95,11 @@ namespace TranslationTool
 			}
         }
                      
-		public IEnumerable<SegmentSet> Segments
+		public IEnumerable<SegmentsByKey> ByKey
 		{
 			get
 			{
-				List<SegmentSet> sets = new List<SegmentSet>();
+				List<SegmentsByKey> sets = new List<SegmentsByKey>();
 
 				foreach (var key in Keys)
 				{
@@ -128,7 +110,7 @@ namespace TranslationTool
 					}
 
 					//yield return new SegmentSet(key, Dicts.Where(kvp => kvp.Value.ContainsKey(key)).Select(kvp => new Segment(kvp.Key, kvp.Value[key])));
-					sets.Add(new SegmentSet(key, Segments));	
+					sets.Add(new SegmentsByKey(key, Segments));	
 				}
 				return sets;
 			}
@@ -267,4 +249,5 @@ namespace TranslationTool
 
         }       
     }
+	#endif
 }

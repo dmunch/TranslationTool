@@ -93,10 +93,11 @@ namespace TranslationTool.IO
 				dicts.Add(lang, new Dictionary<string, string>());
 			}
 
+			var tp = new TranslationModule(project, "en", languages.ToArray());
 			for (int rowIdx = 1; rowIdx < listFeed.Entries.Count; rowIdx++)
 			{
 				ListEntry row = (ListEntry)listFeed.Entries[rowIdx];
-
+				string comment = null;
 
 				string key = row.Elements[0].Value; // first column is the key
 				// Update the row's data.
@@ -107,22 +108,21 @@ namespace TranslationTool.IO
 					//in list based feeds localname always correponds to first row
 					if (element.LocalName.ToLower() == "comment")
 					{
-						comments.Add(key, element.Value);
+						comment = element.Value;
 					}
 					else
 					{ 						
-						dicts[element.LocalName].Add(key, element.Value);
+						tp.Add(new Segment(element.LocalName, key, element.Value));
 					}
 				}
 
+				foreach(var seg in tp.ByKey[key])
+				{
+					seg.Comment = comment;
+				}
 			}
 
-			var tp = new TranslationModule(project, "en", languages.ToArray());
-			tp.Dicts = dicts;
-			tp.Comments = comments;
-
 			return tp;
-
 		}
 
 		public void ListQuery(WorksheetEntry worksheet)

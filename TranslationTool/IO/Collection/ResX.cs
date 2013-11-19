@@ -20,13 +20,19 @@ namespace TranslationTool.IO.Collection
 			
 			var tpc = new TranslationModuleCollection();
 
-			var files = System.IO.Directory.EnumerateFiles(directory, "*.resx").Select(file => System.IO.Path.GetFileNameWithoutExtension(file));
-			files = files.Select(file => file.Split('.')[0]).GroupBy(f => f).Select(g => g.Key);
 
-			foreach (var pName in files)
+			foreach (var pName in GetModuleNames(directory))
 				tpc.Projects.Add(pName, IO.ResX.FromResX(directory, pName, masterLanguage));
 
 			return tpc;
+		}
+
+		public static IEnumerable<string> GetModuleNames(string directory)
+		{
+			var files = System.IO.Directory.EnumerateFiles(directory, "*.resx").Select(file => System.IO.Path.GetFileNameWithoutExtension(file));
+			var modules = files.Select(file => file.Split('.')[0]).GroupBy(f => f).Select(g => g.Key);
+
+			return modules;
 		}
 
 		public void ToResX(TranslationModuleCollection tpc, string targetDir)

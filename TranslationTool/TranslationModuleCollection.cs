@@ -7,6 +7,12 @@ using TranslationTool.IO;
 
 namespace TranslationTool
 {
+	public interface ITranslationProject
+	{
+		IEnumerable<string> Modules { get; }
+		TranslationModule this[string moduleName] { get; set; }
+	}
+
     public class TranslationModuleCollection
     {
 		public Dictionary<string, TranslationModule> Projects { get; set; }

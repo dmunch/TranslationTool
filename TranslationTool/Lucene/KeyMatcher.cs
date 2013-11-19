@@ -20,9 +20,9 @@ namespace TranslationTool.Memory
 
 			masterLanguage = masterLanguage ?? tp.MasterLanguage;
 
-			foreach (var seg in tp.Dicts[masterLanguage])
+			foreach (var seg in tp.ByLanguage[masterLanguage])
 			{
-				var results = memory.Query(masterLanguage, seg.Value);
+				var results = memory.Query(masterLanguage, seg.Text);
 
 				if (results.Any())
 				{
@@ -42,14 +42,39 @@ namespace TranslationTool.Memory
 		public void ChangeKeys(TranslationModule tp, bool concatMultipleMatches = false)
 		{
 			int counter = 0;
-			foreach(var kvp in Matches)
-			{
-				if(kvp.Key == kvp.Value) continue;
+			var byLanguage = tp.ByLanguage;
 
-				foreach(var langKey in tp.Languages)
+			foreach(var kvp in Matches.Where(kvp => kvp.Key != kvp.Value))
+			{				
+				foreach(var lang in byLanguage)
 				{
-					var lang = tp.Dicts[langKey];
+					var newKey = lang.Where(s => s.Key == kvp.Key);
+					var existingKey = lang.Where(s => s.Key == kvp.Value);
 
+					if (newKey.Any() && !existingKey.Any())
+					{
+						//rename keys
+						foreach (var s in newKey)
+						{
+							s.Key = kvp.Key;
+						}
+					}
+					else if (!existingKey.Any())
+					{
+						//add empty value
+						tp.Add(new Segment(lang.Key, kvp.Value, ""));
+					}
+					else if (concatMultipleMatches)
+					{
+						//multiple matches found
+						//in this case we apply the special rule for lucca which consist in concetenating the strings
+
+						throw new NotImplementedException();
+					}
+
+					/*
+					//var lang = tp.Dicts[langKey];
+					if(lang)
 					if (lang.ContainsKey(kvp.Key) && !lang.ContainsKey(kvp.Value))
 					{
 						lang.Add(kvp.Value, lang[kvp.Key]);
@@ -66,7 +91,7 @@ namespace TranslationTool.Memory
 						//in this case we apply the special rule for lucca which consist in concetenating the strings
 						lang[kvp.Value] += " <br /><br />" + lang[kvp.Key];
 						lang.Remove(kvp.Key);
-					}
+					}*/
 				}				
 			}
 		}

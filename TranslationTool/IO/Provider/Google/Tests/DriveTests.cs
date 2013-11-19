@@ -43,7 +43,7 @@ namespace TranslationTool.IO.Google.Tests
 
 			var file = new File();
 
-			file.Title = tp.Project;
+			file.Title = tp.Name;
 			file.Description = string.Format("Created via {0} at {1}", Drive.ApplicationName, DateTime.Now.ToString());
 			file.MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 			//file.MimeType = "application/vnd.ms-excel";

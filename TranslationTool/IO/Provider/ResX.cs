@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Resources;
+using System.Linq;
 
 namespace TranslationTool.IO
 {
@@ -10,14 +11,14 @@ namespace TranslationTool.IO
 		{
 			var tp = new TranslationModule(project, masterLanguage);
 
-			tp.Dicts.Add(masterLanguage, GetDictFromResX(dir + project + ".resx"));
+			tp.Add(Segment.FromDict(masterLanguage, GetDictFromResX(dir + project + ".resx")));
 
 			foreach (var l in tp.Languages)
 			{
 				if (l == masterLanguage) continue; //we skip master language since we treated it already as a special case
 
 				var file = dir + project + "." + l + ".resx";
-				tp.Dicts.Add(l, GetDictFromResX(file));
+				tp.Add(Segment.FromDict(l, GetDictFromResX(file)));
 			}
 			
 			return tp;
@@ -43,18 +44,19 @@ namespace TranslationTool.IO
 
 		public static void ToResX(TranslationModule tp, string targetDir)
 		{
-			ToResX(tp.Dicts[tp.MasterLanguage], targetDir + tp.Project + ".resx");
+			var byLanguage = tp.ByLanguage;
+			ToResX(byLanguage[tp.MasterLanguage], targetDir + tp.Name + ".resx");
 			foreach (var l in tp.Languages)
 			{
 				if (l == tp.MasterLanguage) continue; //we skip master language since we treated it already as a special case
 
-				Dictionary<string, string> dict;
-				if (tp.Dicts.ContainsKey(l))
-					dict = tp.Dicts[l];
+				IEnumerable<Segment> segments;
+				if (byLanguage.Contains(l))
+					segments = byLanguage[l];
 				else
-					dict = TranslationModule.EmptyFromTemplate(tp.Dicts[tp.MasterLanguage]);
+					segments = Segment.EmptyFromTemplate(byLanguage[tp.MasterLanguage]);
 
-				ToResX(dict, targetDir + tp.Project + "." + l + ".resx");
+				ToResX(segments, targetDir + tp.Name + "." + l + ".resx");
 			}
 		}
 
@@ -64,6 +66,15 @@ namespace TranslationTool.IO
 			{
 				foreach (var kvp in dict)
 					resx.AddResource(kvp.Key, kvp.Value);
+			}
+		}
+		protected static void ToResX(IEnumerable<Segment> segments, string fileName)
+		{
+			segments = segments.Where(s => !string.IsNullOrWhiteSpace(s.Text));
+			using (ResXResourceWriter resx = new ResXResourceWriter(fileName))
+			{
+				foreach (var kvp in segments)
+					resx.AddResource(kvp.Key, kvp.Text);
 			}
 		}
 	}

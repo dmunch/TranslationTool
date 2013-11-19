@@ -14,18 +14,24 @@ namespace TranslationTool.IO
 			var tmx = new tmx();
 			var tus = new List<tu>();
 
-			foreach (var key in tp.Keys)
+			foreach (var key in tp.ByKey)
 			{
 				var tu = new tu();
-				tu.tuid = key;
+				tu.tuid = key.Key;
 
 				var tuvs = new List<tuv>();
 
 				//tuvs.Add(new tuv() { lang = tp.masterLanguage.ToUpper(), lang1 = tp.masterLanguage.ToUpper(), seg = new seg() { Text = new string[] { kvp.Value } } });
+				/*
 				foreach (var l in tp.Languages)
 				{
 					if (tp.Dicts.ContainsKey(l) && tp.Dicts[l].ContainsKey(key))
 						tuvs.Add(new tuv() { lang = l.ToUpper(), lang1 = l.ToUpper(), seg = new seg() { Text = new string[] { tp.Dicts[l][key] } } });
+				}
+				*/
+				foreach (var seg in key)
+				{
+					tuvs.Add(new tuv() { lang = seg.Language.ToUpper(), lang1 = seg.Language.ToUpper(), seg = new seg() { Text = new string[] { seg.Text } } });
 				}
 
 				tu.tuv = tuvs.ToArray();
@@ -39,7 +45,7 @@ namespace TranslationTool.IO
 			XmlSerializer xs = new XmlSerializer(typeof(tmx), null, extraTypes, new XmlRootAttribute("tmx"), null);
 
 			//specify encoding to add BOM
-			using (var sw = new StreamWriter(targetDir + @"\" + tp.Project + ".tmx", false, new UTF8Encoding(false)))
+			using (var sw = new StreamWriter(targetDir + @"\" + tp.Name + ".tmx", false, new UTF8Encoding(false)))
 			{
 				XmlWriterSettings settings = new XmlWriterSettings();
 				settings.Indent = false;
