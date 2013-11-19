@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.IO;
-using TranslationTool.IO;
 
 namespace TranslationTool
 {	
-    public class TranslationModuleCollection : ITranslationProject
+    public class TranslationProject : ITranslationProject
     {
 		public Dictionary<string, TranslationModule> Projects { get; set; }
 		public IEnumerable<string> ModuleNames
@@ -26,12 +22,12 @@ namespace TranslationTool
 			}
 		}
 
-		public TranslationModuleCollection(Dictionary<string, TranslationModule> dict)
+		public TranslationProject(Dictionary<string, TranslationModule> dict)
 		{
 			this.Projects = dict;
 		}
 
-        public TranslationModuleCollection()
+        public TranslationProject()
         {
             this.Projects = new Dictionary<string, TranslationModule>();
         }

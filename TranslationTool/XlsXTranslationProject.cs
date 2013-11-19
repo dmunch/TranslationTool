@@ -7,13 +7,13 @@ namespace TranslationTool
 {
 	class ResXTranslationProject : ITranslationProject
 	{
-		TranslationModuleCollection Collection;
+		TranslationProject Collection;
 		string Directory;
 		string MasterLanguage;
 
 		public ResXTranslationProject(string directory, string masterLanguage)
 		{
-			this.Collection = new TranslationModuleCollection();
+			this.Collection = new TranslationProject();
 
 			this.ModuleNames= IO.Collection.ResX.GetModuleNames(directory);
 			this.MasterLanguage = masterLanguage;

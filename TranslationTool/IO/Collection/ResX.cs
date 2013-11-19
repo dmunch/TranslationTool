@@ -5,9 +5,9 @@ namespace TranslationTool.IO.Collection
 {
 	public class ResX
 	{
-		public static TranslationModuleCollection FromResX(IEnumerable<string> projectNames, string directory, string masterLanguage)
+		public static TranslationProject FromResX(IEnumerable<string> projectNames, string directory, string masterLanguage)
 		{
-			var tpc = new TranslationModuleCollection();
+			var tpc = new TranslationProject();
 
 			foreach (var pName in projectNames)
 				tpc.Projects.Add(pName, IO.ResX.FromResX(directory, pName, masterLanguage));
@@ -15,10 +15,10 @@ namespace TranslationTool.IO.Collection
 			return tpc;
 		}
 
-		public static TranslationModuleCollection FromResX(string directory, string masterLanguage)
+		public static TranslationProject FromResX(string directory, string masterLanguage)
 		{
 			
-			var tpc = new TranslationModuleCollection();
+			var tpc = new TranslationProject();
 
 
 			foreach (var pName in GetModuleNames(directory))
@@ -35,7 +35,7 @@ namespace TranslationTool.IO.Collection
 			return modules;
 		}
 
-		public void ToResX(TranslationModuleCollection tpc, string targetDir)
+		public void ToResX(TranslationProject tpc, string targetDir)
 		{
 			foreach (var tp in tpc.Projects)
 				IO.ResX.ToResX(tp.Value, targetDir);

@@ -33,7 +33,7 @@ namespace TranslationTool.Memory
 			this.TranslationProject = tp;
 		}
 
-		public TranslationMemory(TranslationModuleCollection tpCollection)
+		public TranslationMemory(TranslationProject tpCollection)
 		{
 			Index = TranslationMemoryHelpers.BuildTranslationProjectIndex(tpCollection.Projects.Values);
 			this.TranslationProject = tpCollection.Projects.First().Value;

@@ -6,9 +6,9 @@ namespace TranslationTool.IO.Collection
 {
 	public class CSV
 	{
-		public static TranslationModuleCollection FromCSV(IEnumerable<string> projectNames, string fileName, string masterLanguage)
+		public static TranslationProject FromCSV(IEnumerable<string> projectNames, string fileName, string masterLanguage)
 		{
-			var tpc = new TranslationModuleCollection();
+			var tpc = new TranslationProject();
 
 
 			foreach (var pName in tpc.ModuleNames)
@@ -17,7 +17,7 @@ namespace TranslationTool.IO.Collection
 			return tpc;
 		}
 
-		public void ToCSV(TranslationModuleCollection tpc, string targetDir)
+		public void ToCSV(TranslationProject tpc, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
 			string fileName = "";

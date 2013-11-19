@@ -3,187 +3,130 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TranslationTool.Helpers;
-using System.Linq.Expressions;
 
 namespace TranslationTool
-{	
-	public class TranslationModuleBase
+{
+	public static class ExtensionMethods
 	{
-		public IEnumerable<string> Languages { get; protected set; }
-		public string MasterLanguage { get; protected set; }
-		public string Name { get; set; }
-
-		public TranslationModuleBase(TranslationModuleBase other)
+		/*
+		public static ILookup<string, ILookup<string, T>> ToDoubleLookup<T>(this IEnumerable<T> list, Expression<Func<T, string>> key1Selector, Expression<Func<T, string>> key2Selector)
 		{
-			this.MasterLanguage = other.MasterLanguage;
-			this.Languages = other.Languages;
-			this.Name = other.Name;
+			Func<T, string> _CompiledFunc1 = key1Selector.Compile();
+			Func<T, string> _CompiledFunc = key2Selector.Compile();
+			return list.ToLookup(item => item, new Comparer2<T, string>(key1Selector))
+																  .ToLookup(s => _CompiledFunc(s.Key), s => s.ToLookup(item => _CompiledFunc1(item)));
+		}*/
+
+		public static ILookup<string, Segment> ByLanguage(this IEnumerable<Segment> segments)
+		{
+			return segments.ToLookup(s => s.Language);
 		}
-
-		public TranslationModuleBase(string name, string masterLanguage)
-			: this(name, masterLanguage, new string[] { "en", "de", "es", "fr", "it", "nl" })
+		public static ILookup<string, Segment> ByKey(this IEnumerable<Segment> segments)
 		{
-		}
-
-		public TranslationModuleBase(string name, string masterLanguage, string[] languages)
-		{
-			this.MasterLanguage = masterLanguage;
-			this.Languages = languages;
-			
-			this.Name = name;
-		}
-			
-		public static void PrintSynced(Dictionary<string, string> synced, string language)
-		{
-			Console.WriteLine("Synced {0} rows in {1}.", synced.Count, language);
-			foreach (var kvp in synced)
-				Console.WriteLine(kvp.Key);
-
-		}		
-	}
-
-#if false 
-
-	public class TranslationModuleDiff2 : TranslationModuleBase
-	{
-		public Dictionary<string, DictDiff> DiffPerLanguage { get; protected set; }
-
-		public TranslationModuleDiff2(TranslationModuleBase other, Dictionary<string, DictDiff> _diffPerLanguage) 
-			: base(other)
-		{
-			this.DiffPerLanguage = _diffPerLanguage;
-		}
-
-		public void Print()
-		{
-			foreach (var diff in DiffPerLanguage)
-			{
-				diff.Value.Print(diff.Key);
-			}
+			return segments.ToLookup(s => s.Key);
 		}
 	}
+	
+	public class TranslationModule : TranslationModuleBase, TranslationTool.ITranslationModule
+	{
+		public IEnumerable<Segment> Segments { get { return _Segments; } }
 
-    public class TranslationModule : TranslationModuleBase
-    {
-        public Dictionary<string, Dictionary<string, string>> Dicts;
-		public Dictionary<string, string> Comments;
-		
+		protected List<Segment> _Segments { get; set; }
+
 		public IEnumerable<string> Keys
 		{
 			get
 			{
-				return Dicts[MasterLanguage].Keys;
+				return Segments.Select(s => s.Key);
 			}
 		}
 
-        public TranslationModule(string project, string masterLanguage)
+		public TranslationModule(string project, string masterLanguage)
 			: base(project, masterLanguage)
-        {
-			this.Dicts = new Dictionary<string, Dictionary<string, string>>();
-			this.Comments = new Dictionary<string, string>();
-        }
+		{
+			this._Segments = new List<Segment>();
+		}
 
-        public TranslationModule(string project, string masterLanguage, string[] languages)
+		public TranslationModule(string project, string masterLanguage, string[] languages)
 			: base(project, masterLanguage, languages)
-        {
-            this.Dicts = new Dictionary<string, Dictionary<string, string>>();            
-			this.Comments = new Dictionary<string, string>();
+		{
+			this._Segments = new List<Segment>();
+		}
 
-			foreach (var lang in Languages)
-			{
-				this.Dicts.Add(lang, new Dictionary<string, string>());
-			}
-        }
-                     
-		public IEnumerable<SegmentsByKey> ByKey
+		public void Add(Segment s)
+		{
+			this._Segments.Add(s);
+		}
+
+		public void Add(IEnumerable<Segment> s)
+		{
+			this._Segments.AddRange(s);
+		}
+
+
+		/*
+		public IDictionary<string, Dictionary<string, Segment>> ByLanguageAndKey
 		{
 			get
 			{
-				List<SegmentsByKey> sets = new List<SegmentsByKey>();
+				var t =  ByLanguage.ToDictionary(bl => bl.Key, 
+					                           bl => bl.ToDictionary(s => s.Key));
+				return t;
+			}
+		}
+		*/
 
-				foreach (var key in Keys)
-				{
-					List<Segment> Segments = new List<Segment>();
-					foreach (var kvp in Dicts.Where(kvp => kvp.Value.ContainsKey(key)))
-					{
-						Segments.Add(new Segment(kvp.Key, kvp.Value[key]));
-					}
-
-					//yield return new SegmentSet(key, Dicts.Where(kvp => kvp.Value.ContainsKey(key)).Select(kvp => new Segment(kvp.Key, kvp.Value[key])));
-					sets.Add(new SegmentsByKey(key, Segments));	
-				}
-				return sets;
+		public ILookup<string, Segment> ByKey
+		{
+			get
+			{
+				return Segments.ByKey();
 			}
 		}
 
-        public static Dictionary<string, string> EmptyFromTemplate(Dictionary<string, string> template)
-        {
-            var dict = new Dictionary<string, string>();
-            foreach (var kvp in template)
-            {
-                dict.Add(kvp.Key, "");
-            }
-
-            return dict;
-        }
-               
-        public void RemoveEmptyKeys()
-        {
-            foreach (var l in Languages)
-            {
-                if(!Dicts.ContainsKey(l)) continue;
-                
-
-                List<string> keysToRemove = new List<string>();
-
-                foreach (var kvp in Dicts[l])
-                    if (string.IsNullOrWhiteSpace(kvp.Value.Trim()))
-                        keysToRemove.Add(kvp.Key);
-
-                foreach (var key in keysToRemove)
-                    Dicts[l].Remove(key);
-            }
-        }
-
-		public void RenameVariables(string old, string newName)
+		public ILookup<string, Segment> ByLanguage
 		{
-			foreach (var l in Languages)
+			get
 			{
-				if (!Dicts.ContainsKey(l)) continue;
-
-				Dictionary<string, string> keysToReplace = new Dictionary<string, string>();
-				foreach (var kvp in Dicts[l])
-				{
-					if (string.IsNullOrWhiteSpace(kvp.Value.Trim())) continue;
-					keysToReplace.Add(kvp.Key, kvp.Value.Replace(old, newName));
-				}
-
-				foreach (var kvp in keysToReplace)
-				{
-					Dicts[l][kvp.Key] = kvp.Value;
-				}
+				return Segments.ByLanguage();
 			}
 		}
 
 		public void RemoveKeys(IEnumerable<string> keys)
 		{
-			foreach (var l in Languages)
+			var byKeys = this.Segments.ByKey();
+			foreach (var key in keys.Where(k => byKeys.Contains(k)))
 			{
-				if (!Dicts.ContainsKey(l)) continue;
-				
-				var dict = Dicts[l];
-				foreach (var key in keys)
-				{
-					if (dict.ContainsKey(key))
-					{
-						dict.Remove(key);
-					}
-				}
+				Remove(byKeys[key]);
+			}			
+		}
+		
+		public bool ContainsKey(string key)
+		{
+			return this.Segments.FirstOrDefault(s => s.Key == key) != null;
+		}
+
+		public void Remove(IEnumerable<Segment> segments)
+		{
+			foreach (var s in segments.ToList())
+				this._Segments.Remove(s);
+		}
+
+		public void RemoveEmptyKeys()
+		{
+			Remove(Segments.Where(s => string.IsNullOrWhiteSpace(s.Text)));
+		}
+
+		public void RenameVariables(string old, string newName)
+		{
+			foreach (var s in Segments.Where(s => !string.IsNullOrWhiteSpace(s.Text)))
+			{
+				s.Text = s.Text.Replace(old, newName);
 			}
 		}
 
-        public TranslationModuleDiff SyncWith(TranslationModule tp)
-        {
+		public TranslationModuleDiff SyncWith(TranslationModule tp)
+		{
 			var diff = Diff(tp);
 			Patch(diff);
 
@@ -192,23 +135,33 @@ namespace TranslationTool
 
 		public TranslationModuleDiff Diff(TranslationModule tp)
 		{
-			var allSync = new Dictionary<string, DictDiff>();
+			var allSync = new Dictionary<string, SegmentDiff>();
 
+			
+			foreach (var l in Segments.ByLanguage())
+			{
+				//if (!Dicts.ContainsKey(l) || !tp.Dicts.ContainsKey(l)) continue;
+				var segDiff = new SegmentDiff();
+				segDiff.Diff(l, tp.ByLanguage[l.Key]);
+				allSync.Add(l.Key, segDiff);
+			}
+
+			/*
 			foreach (var l in Languages)
 			{
 				if (!Dicts.ContainsKey(l) || !tp.Dicts.ContainsKey(l)) continue;
-				allSync.Add(l, DictDiff.Diff(Dicts[l], tp.Dicts[l]));				
+				allSync.Add(l, DictDiff.Diff(Dicts[l], tp.Dicts[l]));
 			}
-
+			*/
 			return new TranslationModuleDiff(this, allSync);
 		}
 
 		public void Patch(TranslationModuleDiff tpDiff)
 		{
-			foreach (var l in Languages)
+			foreach (var l in Segments.ByLanguage())
 			{
-				if (!Dicts.ContainsKey(l) || !tpDiff.DiffPerLanguage.ContainsKey(l)) continue;
-				DictDiff.Patch(Dicts[l], tpDiff.DiffPerLanguage[l]);				
+				if (!tpDiff.DiffPerLanguage.ContainsKey(l.Key)) continue;
+				tpDiff.DiffPerLanguage[l.Key].Patch(l);
 			}
 		}
 
@@ -233,7 +186,8 @@ namespace TranslationTool
 			string keyBase = keyBuilder.ToString().Replace(' ', '_').TrimEnd(' ', '_');
 			string key = keyBase;
 			int keyCounter = 1;
-			while (Dicts[MasterLanguage].ContainsKey(key))
+
+			while (this.ContainsKey(key))
 			{
 				key = keyBase + "_" + (keyCounter++).ToString();
 			}
@@ -241,13 +195,12 @@ namespace TranslationTool
 			return key;
 		}
 
-        public static void PrintSynced(Dictionary<string, string> synced, string language)
-        {
-            Console.WriteLine("Synced {0} rows in {1}.", synced.Count, language);
-            foreach (var kvp in synced)
-                Console.WriteLine(kvp.Key);
+		public static void PrintSynced(Dictionary<string, string> synced, string language)
+		{
+			Console.WriteLine("Synced {0} rows in {1}.", synced.Count, language);
+			foreach (var kvp in synced)
+				Console.WriteLine(kvp.Key);
 
-        }       
-    }
-	#endif
+		}
+	}
 }

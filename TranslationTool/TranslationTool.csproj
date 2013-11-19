@@ -171,6 +171,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\ITranslationProject.cs" />
+    <Compile Include="Core\SegmentDiff.cs" />
+    <Compile Include="Core\TranslationModuleDiff.cs" />
     <Compile Include="Helpers\DictDiff.cs" />
     <Compile Include="Helpers\Diff\DiffMatchPatch.cs" />
     <Compile Include="Helpers\LambdaComparer.cs" />
@@ -205,9 +207,9 @@
     <Compile Include="Core\Segment.cs" />
     <Compile Include="Tests.cs" />
     <Compile Include="TMX14\tmx14.cs" />
+    <Compile Include="Core\Old\TranslationModuleOld.cs" />
     <Compile Include="Core\TranslationModule.cs" />
-    <Compile Include="Core\TranslationModule2.cs" />
-    <Compile Include="Core\TranslationModuleCollection.cs" />
+    <Compile Include="Core\TranslationProject.cs" />
     <Compile Include="XlsXTranslationProject.cs" />
   </ItemGroup>
   <ItemGroup>
