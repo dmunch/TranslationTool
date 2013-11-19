@@ -175,7 +175,9 @@
     <Compile Include="Core\TranslationModuleDiff.cs" />
     <Compile Include="Helpers\DictDiff.cs" />
     <Compile Include="Helpers\Diff\DiffMatchPatch.cs" />
+    <Compile Include="Helpers\GeneralDiff.cs" />
     <Compile Include="Helpers\LambdaComparer.cs" />
+    <Compile Include="Helpers\StringContentDiff.cs" />
     <Compile Include="IEqualityComparable.cs" />
     <Compile Include="IO\Provider\Arb.cs" />
     <Compile Include="IO\Collection\CSV.cs" />
