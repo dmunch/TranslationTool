@@ -172,6 +172,7 @@
   <ItemGroup>
     <Compile Include="Core\ITranslationProject.cs" />
     <Compile Include="Core\SegmentDiff.cs" />
+    <Compile Include="Core\TranslationModuleBase.cs" />
     <Compile Include="Core\TranslationModuleDiff.cs" />
     <Compile Include="Helpers\DictDiff.cs" />
     <Compile Include="Helpers\Diff\DiffMatchPatch.cs" />
