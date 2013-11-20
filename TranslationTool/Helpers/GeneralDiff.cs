@@ -15,9 +15,8 @@ namespace TranslationTool.Helpers
 		protected Func<T, TKey> KeySelector;
 		public Func<T, TContent> ContentSelector;
 		protected Action<T, TContent> ContentSetter;
-
-		//protected IEqualityComparer<TContent> EqualityComparer;
-		protected Func<TContent, TContent, bool> EqualityComparer;
+		
+		protected Func<TContent, TContent, bool> IsModifiedComparer;
 
 		public GeneralDiff(Expression<Func<T, TKey>> _KeySelector, Expression<Func<T, TContent>> contentSelector)
 		{
@@ -35,8 +34,6 @@ namespace TranslationTool.Helpers
 
 		public void Diff(IEnumerable<T> list1, IEnumerable<T> list2)
 		{
-			//Diff(new LambdaComparer<T, TKey>(KeySelector));
-			//IEqualityComparer<T> equalityComparer = null;
 			var dDiff = new DictDiff();
 
 			this.Orig.Clear();
@@ -57,7 +54,7 @@ namespace TranslationTool.Helpers
 			*/
 			foreach (var kvp in dict1)
 			{
-				if (dict2.ContainsKey(kvp.Key) && !EqualityComparer(ContentSelector(kvp.Value), ContentSelector(dict2[kvp.Key])))
+				if (dict2.ContainsKey(kvp.Key) && IsModifiedComparer(ContentSelector(kvp.Value), ContentSelector(dict2[kvp.Key])))
 				//if (dict2.ContainsKey(kvp.Key) && !ContentSelector(kvp.Value).Equals(ContentSelector(dict2[kvp.Key])))
 				{
 					Updated.Add(kvp.Key, dict2[kvp.Key]);

@@ -9,7 +9,7 @@ namespace TranslationTool.Helpers
 		public StringContentDiff(Expression<Func<T, TKey>> KeySelector, Expression<Func<T, string>> contentSelector)
 			: base(KeySelector, contentSelector)
 		{
-			this.EqualityComparer = (s1, s2) => s1 == s2; //&& !string.IsNullOrWhiteSpace(s1) && !string.IsNullOrWhiteSpace(s2);
+			this.IsModifiedComparer = (s1, s2) => s1 != s2; //&& !string.IsNullOrWhiteSpace(s1) && !string.IsNullOrWhiteSpace(s2);
 		}
 
 		public void PrintDiff(TextWriter os = null)
