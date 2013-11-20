@@ -188,6 +188,7 @@
     <Compile Include="IO\Collection\XlsX.cs" />
     <Compile Include="IO\Provider\CSV.cs" />
     <Compile Include="IO\GDataSpreadSheet.cs" />
+    <Compile Include="IO\Provider\Google\GoogleTranslationProject.cs" />
     <Compile Include="IO\Provider\Google\Spreadsheets.cs" />
     <Compile Include="IO\Provider\Google\Tests\DriveTests.cs" />
     <Compile Include="IO\Provider\Google\Tests\SpreadsheetsTests.cs" />
