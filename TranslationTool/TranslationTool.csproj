@@ -214,6 +214,7 @@
     <Compile Include="Core\Old\TranslationModuleOld.cs" />
     <Compile Include="Core\TranslationModule.cs" />
     <Compile Include="Core\TranslationProject.cs" />
+    <Compile Include="Core\TranslationProjectDiff.cs" />
     <Compile Include="XlsXTranslationProject.cs" />
   </ItemGroup>
   <ItemGroup>
