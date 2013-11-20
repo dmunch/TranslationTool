@@ -50,12 +50,12 @@ namespace TranslationTool.IO.Provider.Google
 
 			var cachedFiles = System.IO.Directory.GetFiles(CachingDir, "*.xlsx");
 			var cachedFilesAccessDate = cachedFiles.ToDictionary(file => System.IO.Path.GetFileNameWithoutExtension(file),
-																 file => System.IO.Directory.GetLastAccessTime(file));
+																 file => System.IO.Directory.GetLastWriteTimeUtc(file));
 
 			foreach (var file in files)
 			{
-				var modifiedDate = System.Xml.XmlConvert.ToDateTime(file.ModifiedDate);
-
+				var modifiedDate = FromRFC3339(file.ModifiedDate);
+				
 				if (!cachedFilesAccessDate.ContainsKey(file.Title))
 				{
 					//file does'nt exist yet, download it
@@ -79,6 +79,11 @@ namespace TranslationTool.IO.Provider.Google
 			return files;
 		}
 
+		protected static DateTime FromRFC3339(string dateString)
+		{
+			return System.Xml.XmlConvert.ToDateTime(dateString, System.Xml.XmlDateTimeSerializationMode.Utc);
+		}
+
 		protected string GetLocalFileName(File file)
 		{
 			return CachingDir + @"\" + file.Title + ".xlsx";
@@ -96,6 +101,7 @@ namespace TranslationTool.IO.Provider.Google
 			{
 				memStream.CopyTo(fileStream);
 			}
+			System.IO.File.SetLastWriteTimeUtc(fileName, FromRFC3339(file.ModifiedDate));
 		}
 
 		public IEnumerable<string> ModuleNames
