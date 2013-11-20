@@ -94,7 +94,7 @@ namespace TranslationTool.Helpers
 
 		public void Patch(IList<T> listToPatch, IEnumerable<T> lookup)
 		{
-			this.Patch(listToPatch, listToPatch.ToDictionary(KeySelector));
+			this.Patch(listToPatch, lookup.ToDictionary(KeySelector));
 		}
 
 		public void Patch(IList<T> listToPatch)
