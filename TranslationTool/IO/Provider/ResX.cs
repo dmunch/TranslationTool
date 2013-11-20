@@ -2,9 +2,68 @@
 using System.Collections.Generic;
 using System.Resources;
 using System.Linq;
+using System;
 
 namespace TranslationTool.IO
 {
+	class ResXTranslationProject : ITranslationProject
+	{
+		TranslationProject Collection;
+		string Directory;
+		string MasterLanguage;
+
+		public ResXTranslationProject(string directory, string masterLanguage)
+		{
+			this.Collection = new TranslationProject();
+
+			this.ModuleNames = IO.Collection.ResX.GetModuleNames(directory);
+			this.MasterLanguage = masterLanguage;
+		}
+
+		public TranslationModule this[string moduleName]
+		{
+			get
+			{
+				if (!Collection.Projects.ContainsKey(moduleName) && ModuleNames.Contains(moduleName))
+				{
+					Collection.Projects.Add(moduleName, IO.ResX.FromResX(this.Directory, moduleName, this.MasterLanguage));
+				}
+
+
+				return Collection.Projects[moduleName];
+			}
+
+			set
+			{
+				if (!Collection.Projects.ContainsKey(moduleName))
+				{
+					Collection.Projects.Add(moduleName, value);
+					IO.ResX.ToResX(value, this.Directory);
+				}
+			}
+		}
+
+		public IEnumerable<string> ModuleNames { get; set; }
+		public IEnumerable<TranslationModule> Modules
+		{
+			get
+			{
+				return ModuleNames.Select(name => this[name]);
+			}
+		}
+
+		public void Add(TranslationModule module)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SyncWith(ITranslationProject other)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+
 	public class ResX
 	{
 		public static TranslationModule FromResX(string dir, string project, string masterLanguage)

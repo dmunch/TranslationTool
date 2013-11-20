@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TranslationTool
 {
-	interface ITranslationModule
+	public interface ITranslationModule
 	{
 		void Add(IEnumerable<Segment> s);
 		void Add(Segment s);
