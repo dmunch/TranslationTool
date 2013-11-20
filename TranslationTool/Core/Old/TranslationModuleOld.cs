@@ -12,12 +12,14 @@ namespace TranslationTool
 		public IEnumerable<string> Languages { get; protected set; }
 		public string MasterLanguage { get; protected set; }
 		public string Name { get; set; }
+		public DateTime LastModified { get; set; }
 
 		public TranslationModuleBase(TranslationModuleBase other)
 		{
 			this.MasterLanguage = other.MasterLanguage;
 			this.Languages = other.Languages;
 			this.Name = other.Name;
+			this.LastModified = other.LastModified;
 		}
 
 		public TranslationModuleBase(string name, string masterLanguage)
@@ -31,6 +33,7 @@ namespace TranslationTool
 			this.Languages = languages;
 			
 			this.Name = name;
+			this.LastModified = DateTime.Now;
 		}
 			
 		public static void PrintSynced(Dictionary<string, string> synced, string language)

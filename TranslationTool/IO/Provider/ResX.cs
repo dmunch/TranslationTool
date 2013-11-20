@@ -69,8 +69,11 @@ namespace TranslationTool.IO
 		public static TranslationModule FromResX(string dir, string project, string masterLanguage)
 		{
 			var tp = new TranslationModule(project, masterLanguage);
+			List<DateTime> fileDates = new List<DateTime>();
 
-			tp.Add(Segment.FromDict(masterLanguage, GetDictFromResX(dir + project + ".resx")));
+			var masterFile = dir + project + ".resx";
+			tp.Add(Segment.FromDict(masterLanguage, GetDictFromResX(masterFile)));
+			fileDates.Add(System.IO.File.GetLastWriteTimeUtc(masterFile));
 
 			foreach (var l in tp.Languages)
 			{
@@ -78,9 +81,17 @@ namespace TranslationTool.IO
 
 				var file = dir + project + "." + l + ".resx";
 				tp.Add(Segment.FromDict(l, GetDictFromResX(file)));
+				fileDates.Add(System.IO.File.GetLastWriteTimeUtc(file));
 			}
-			
+
+			tp.LastModified = fileDates.Max();
 			return tp;
+		}
+
+		public static IEnumerable<string> GetResXFileNames(string directory_, string name, IEnumerable<string> languages)
+		{
+			var directory = directory_ + @"\";
+			return languages.Select(l => directory + name + "." + l + ".resx").Union(new []{directory + name + ".resx"});
 		}
 
 		static Dictionary<string, string> GetDictFromResX(string fileName)

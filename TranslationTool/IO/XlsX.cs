@@ -7,10 +7,14 @@ namespace TranslationTool.IO
 	{
 		public static TranslationModule FromXLSX(string project, string masterLanguage, string fileName)
 		{
+			TranslationModule result;
 			using (var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			{
-				return FromXLSX(project, masterLanguage, stream);
+				result =FromXLSX(project, masterLanguage, stream);
 			}
+
+			result.LastModified = System.IO.File.GetLastWriteTimeUtc(fileName);
+			return result;
 		}
 
 		public static TranslationModule FromXLSX(string project, string masterLanguage, Stream stream)
