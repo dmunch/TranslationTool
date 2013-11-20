@@ -67,7 +67,7 @@ namespace TranslationTool
 		{
 			get
 			{
-				return Segments.Select(s => s.Key);
+				return Segments.GroupBy(s => s.Key).Select(s => s.Key);
 			}
 		}
 
