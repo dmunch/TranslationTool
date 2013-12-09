@@ -3,7 +3,7 @@ using ExcelLibrary.SpreadSheet;
 
 namespace TranslationTool.IO
 {
-	class Xls
+	public class Xls
 	{
 		protected static Workbook _ToXLS(TranslationModule project)
 		{

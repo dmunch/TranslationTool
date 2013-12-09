@@ -17,7 +17,7 @@ namespace TranslationTool
 		{
 			var tpd = new TranslationProjectDiff();
 
-			tpd.Diff(p.Modules, other.Modules);
+			tpd.Diff(p.Modules, other.Modules);			
 			return tpd;
 		}
 	}

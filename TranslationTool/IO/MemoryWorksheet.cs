@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TranslationTool.IO.Worksheets
+namespace TranslationTool.IO
 {
 	public class MemoryWorksheet : IWorksheet
 	{

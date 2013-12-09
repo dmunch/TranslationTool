@@ -272,7 +272,7 @@ namespace TranslationTool.IO
 		{
 			MemoryStream xlsStream = new MemoryStream();
 
-			var worksheet = new Worksheets.MemoryWorksheet();
+			var worksheet = new MemoryWorksheet();
 			Export.ToIWorksheet(project, worksheet);
 
 			using (SpreadsheetDocument myDoc = SpreadsheetDocument.Create(xlsStream, SpreadsheetDocumentType.Workbook))
@@ -331,7 +331,7 @@ namespace TranslationTool.IO
 		{
 			MemoryStream xlsStream = new MemoryStream();
 
-			var worksheet = new Worksheets.MemoryWorksheet();
+			var worksheet = new MemoryWorksheet();
 			Export.ToIWorksheet(project, worksheet);
 			
 			var ss = new Stylesheet();

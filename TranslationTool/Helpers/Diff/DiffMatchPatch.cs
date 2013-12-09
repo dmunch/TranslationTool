@@ -25,7 +25,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using Google.GData.Client;
 
 namespace DiffMatchPatch
 {

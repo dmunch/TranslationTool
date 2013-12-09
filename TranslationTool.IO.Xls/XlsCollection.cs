@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TranslationTool.IO.Collection
 {
-	class Xls
+	public class XlsCollection
 	{
 		public static IEnumerable<KeyValuePair<string, TranslationModule>> ToDir(TranslationProject tpc, string targetDir)
 		{
