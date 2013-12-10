@@ -6,7 +6,7 @@ using System;
 
 namespace TranslationTool.IO
 {
-	class ResXTranslationProject : ITranslationProject
+	public class ResXTranslationProject : ITranslationProject
 	{
 		TranslationProject Collection;
 		string Directory;
