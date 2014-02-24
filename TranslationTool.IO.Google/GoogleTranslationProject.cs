@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Google.Apis.Drive.v2.Data;
-
+using TranslationTool.Helpers;
 
 namespace TranslationTool.IO.Provider.Google
 {
@@ -20,10 +20,15 @@ namespace TranslationTool.IO.Provider.Google
 			this.GDriveFolder = gDriveFolder;
 			
 			CheckCacheDirectories();
-			this.ModuleFileCache = UpdateFiles().ToDictionary(file => file.Title);
-
 
 			this.Cache = new Dictionary<string, TranslationModule>();
+		}
+
+
+		public ILogging Logging { get; set; }
+		public void Update()
+		{
+			this.ModuleFileCache = UpdateFiles().ToDictionary(file => file.Title);		
 		}
 
 		protected void CheckCacheDirectories()
@@ -43,6 +48,8 @@ namespace TranslationTool.IO.Provider.Google
 
 		protected IEnumerable<File> UpdateFiles()
 		{
+			ILogging logging = this.Logging ?? new ConsoleLogging();
+
 			var folder = IO.Google.Drive.FindFolder(this.GDriveFolder);
 			var files = IO.Google.Drive.FindSpreadsheetFiles(folder).Where(file => !(file.ExplicitlyTrashed ?? false));
 
@@ -54,25 +61,26 @@ namespace TranslationTool.IO.Provider.Google
 
 			foreach (var file in files)
 			{
-				var modifiedDate = FromRFC3339(file.ModifiedDate);
+				//var modifiedDate = FromRFC3339(file.ModifiedDate ?? file.CreatedDate);
+				var modifiedDate = file.ModifiedDate ?? file.CreatedDate;
 				
 				if (!cachedFilesAccessDate.ContainsKey(file.Title))
 				{
 					//file does'nt exist yet, download it
-					Console.Write("File {0} doesn't exist yet, downloading it...", file.Title);
+					logging.Write("File {0} doesn't exist yet, downloading it...", file.Title);
 					DownloadFile(file);
-					Console.WriteLine(".Done.");
+					logging.WriteLine(".Done.");
 				}
 				else if (cachedFilesAccessDate[file.Title] < modifiedDate)
 				{
 					//file's been updated, download it
-					Console.Write("File {0} with local date {1} has been updated on {2}, downloading it...", file.Title, cachedFilesAccessDate[file.Title], modifiedDate);
+					logging.Write("File {0} with local date {1} has been updated on {2}, downloading it...", file.Title, cachedFilesAccessDate[file.Title], modifiedDate);
 					DownloadFile(file);
-					Console.WriteLine(".Done.");
+					logging.WriteLine(".Done.");
 				}
 				else
 				{
-					Console.WriteLine("File {0} with local date {1} is up to date.", file.Title, cachedFilesAccessDate[file.Title]);
+					logging.WriteLine("File {0} with local date {1} is up to date.", file.Title, cachedFilesAccessDate[file.Title]);
 				}
 			}
 
@@ -101,7 +109,7 @@ namespace TranslationTool.IO.Provider.Google
 			{
 				memStream.CopyTo(fileStream);
 			}
-			System.IO.File.SetLastWriteTimeUtc(fileName, FromRFC3339(file.ModifiedDate));
+			System.IO.File.SetLastWriteTimeUtc(fileName, file.ModifiedDate ?? file.CreatedDate.Value);
 		}
 
 		public IEnumerable<string> ModuleNames
@@ -111,7 +119,21 @@ namespace TranslationTool.IO.Provider.Google
 
 		public IEnumerable<TranslationModule> Modules
 		{
-			get { throw new NotImplementedException(); }
+			get 
+			{
+				//eager load all modules in cache
+				foreach (var moduleFileCacheKvp in ModuleFileCache)
+				{
+					if (Cache.ContainsKey(moduleFileCacheKvp.Key)) continue;
+
+					var tpGoogle = XlsX.FromXLSX(moduleFileCacheKvp.Key, "en", GetLocalFileName(moduleFileCacheKvp.Value));
+
+					if (tpGoogle != null)
+						Cache.Add(moduleFileCacheKvp.Key, tpGoogle);
+				}
+
+				return Cache.Values;
+			}
 		}
 
 		public TranslationModule this[string moduleName]

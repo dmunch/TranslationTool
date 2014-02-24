@@ -32,7 +32,7 @@ namespace TranslationTool.Helpers
 		}
 
 
-		public void Diff(IEnumerable<T> list1, IEnumerable<T> list2)
+		public virtual void Diff(IEnumerable<T> list1, IEnumerable<T> list2)
 		{
 			var dDiff = new DictDiff();
 
@@ -73,22 +73,22 @@ namespace TranslationTool.Helpers
 		}
 
 
-
-		public void Print(TextWriter os = null)
+		//public void Print(TextWriter os)
+		public void Print(ILogging logging)
 		{
-			if (os == null)
-				os = Console.Out;
+			if (logging == null)
+				logging = new ConsoleLogging();
 
-			os.WriteLine("Updated {0} rows.", Updated.Count);
+			logging.WriteLine("Updated {0} rows.", Updated.Count);
 			foreach (var kvp in Updated)
 			{
-				os.WriteLine("K: {0}\n Old: {1} \n New: {2}", KeySelector(kvp.Value), ContentSelector(Orig[kvp.Key]), ContentSelector(kvp.Value));
+				logging.WriteLine("K: {0}\n Old: {1} \n New: {2}", KeySelector(kvp.Value), ContentSelector(Orig[kvp.Key]), ContentSelector(kvp.Value));
 			}
 
-			os.WriteLine("Added {0} rows.", New.Count);
+			logging.WriteLine("Added {0} rows.", New.Count);
 			foreach (var kvp in New)
 			{
-				os.WriteLine(kvp.Key);
+				logging.WriteLine("{0}", kvp.Key);
 			}
 		}
 

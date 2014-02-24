@@ -15,6 +15,7 @@ namespace TranslationTool.IO
 		public ResXTranslationProject(string directory, string masterLanguage)
 		{
 			this.Collection = new TranslationProject();
+			this.Directory = directory;
 
 			this.ModuleNames = IO.Collection.ResX.GetModuleNames(directory);
 			this.MasterLanguage = masterLanguage;

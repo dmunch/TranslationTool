@@ -12,6 +12,7 @@ namespace TranslationTool.Helpers
 			this.IsModifiedComparer = (s1, s2) => s1 != s2; //&& !string.IsNullOrWhiteSpace(s1) && !string.IsNullOrWhiteSpace(s2);
 		}
 
+		/*
 		public void PrintDiff(TextWriter os = null)
 		{
 			if (os == null)
@@ -31,5 +32,7 @@ namespace TranslationTool.Helpers
 				//diff.diff_prettyHtml(diffs);
 			}
 		}
+		*/
+		
 	}
 }

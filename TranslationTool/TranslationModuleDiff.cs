@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TranslationTool.Helpers;
 
 namespace TranslationTool
 {
@@ -12,11 +13,11 @@ namespace TranslationTool
 			this.DiffPerLanguage = _diffPerLanguage;
 		}
 
-		public void Print()
+		public void Print(ILogging logger)
 		{
 			foreach (var diff in DiffPerLanguage)
-			{
-				diff.Value.Print();
+			{				
+				diff.Value.PrintDiff(logger);
 			}
 		}
 	}

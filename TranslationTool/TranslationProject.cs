@@ -38,7 +38,21 @@ namespace TranslationTool
                 if(other.ModuleNames.Contains(tp.Key))
                     tp.Value.SyncWith(other[tp.Key]);
         }
-	
+
+
+		public static IEnumerable<TranslationModuleDiff> Sync(ITranslationProject one, ITranslationProject other)
+		{
+			foreach (var tm in one.Modules)
+				if (other.ModuleNames.Contains(tm.Name))
+					yield return tm.SyncWith(other[tm.Name]);
+		}
+
+		public static IEnumerable<TranslationModuleDiff> Diff(ITranslationProject one, ITranslationProject other)
+		{
+			foreach (var tm in one.Modules)
+				if (other.ModuleNames.Contains(tm.Name))
+					yield return tm.Diff(other[tm.Name]);
+		}
 
 		public TranslationModule this[string moduleName]
 		{

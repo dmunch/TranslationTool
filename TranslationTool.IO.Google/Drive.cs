@@ -77,7 +77,7 @@ namespace TranslationTool.IO.Google
 
 		public static File FindFolder(string folderName)
 		{
-			using (var service = GetService())
+			using (var service = Drive.GetService())
 			{
 				var listRequest = service.Files.List();
 				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.folder' and title = '{0}'", folderName);
@@ -90,7 +90,7 @@ namespace TranslationTool.IO.Google
 
 		public static IList<File> FindSpreadsheetFiles(File folder)
 		{
-			using (var service = GetService())
+			using (var service = Drive.GetService())
 			{
 				var listRequest = service.Files.List();
 				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and '{0}' in parents", folder.Id);
