@@ -18,6 +18,7 @@ using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Util.Store;
 using System.Net;
 using Google.Apis.Authentication;
+using System.Reflection;
 
 namespace TranslationTool.IO.Google
 {
@@ -25,12 +26,20 @@ namespace TranslationTool.IO.Google
 	{
 		public static string ApplicationName = "Lucca TMS";
 
+		public static System.IO.Stream ClientJson
+		{
+			get
+			{
+				return Assembly.GetCallingAssembly().GetManifestResourceStream("TranslationTool.IO.Google.client_secrets.json");
+			}
+		}
 		public static DriveService GetService()
 		{
 			GoogleWebAuthorizationBroker.Folder = "Drive.Sample";
 			UserCredential credential;
-
-			using (var stream = new System.IO.FileStream("client_secrets.json", System.IO.FileMode.Open, System.IO.FileAccess.Read))
+			
+			using(var stream = ClientJson)
+			//using (var stream = new System.IO.FileStream("client_secrets.json", System.IO.FileMode.Open, System.IO.FileAccess.Read))
 			{
 				var secrets = GoogleClientSecrets.Load(stream).Secrets;
 				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(secrets, new[] { DriveService.Scope.DriveFile, DriveService.Scope.Drive }, "user", CancellationToken.None).Result;
@@ -93,14 +102,27 @@ namespace TranslationTool.IO.Google
 			using (var service = Drive.GetService())
 			{
 				var listRequest = service.Files.List();
-				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and '{0}' in parents", folder.Id);
+				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and '{0}' in parents and trashed = false", folder.Id);
 
 				var result = listRequest.Execute();
 
 				return result.Items;
 			}
 		}
-		
+
+		public static File FindSpreadsheetFile(string name)
+		{
+			using (var service = Drive.GetService())
+			{
+				var listRequest = service.Files.List();
+				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and title = '{0}' and trashed = false", name);
+
+				var result = listRequest.Execute();
+
+				return result.Items.First();
+			}
+		}
+			
 		public static System.IO.Stream DownloadFile(File file, bool asXlsx = true)
 		{
 			

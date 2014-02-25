@@ -4,8 +4,25 @@ using System.Collections.Generic;
 
 namespace TranslationTool.IO.Collection
 {
-	class XlsX
-	{				
+	public class XlsX
+	{
+		public static TranslationProject FromMultiSpreadsheet(string masterLanguage, Stream stream)
+		{
+			var tpc = new TranslationProject();
+
+			using (var package = new OfficeOpenXml.ExcelPackage())
+			{
+				package.Load(stream);
+				foreach(var worksheet in package.Workbook.Worksheets)
+				{
+					var project = Export.FromIWorksheet(worksheet.Name, masterLanguage, new XlsXWorksheet(worksheet));
+					tpc.Projects.Add(worksheet.Name, project);
+				}				
+			}
+
+			return tpc;
+		}
+
 		public void ToOneXLSX(TranslationProject tpc, string targetDir)
 		{
 			string fileName = @"\";

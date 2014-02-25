@@ -116,7 +116,7 @@ namespace TranslationTool.IO
 		public static void ToResX(TranslationModule tp, string targetDir)
 		{
 			var byLanguage = tp.ByLanguage;
-			ToResX(byLanguage[tp.MasterLanguage], targetDir + tp.Name + ".resx");
+			ToResX(byLanguage[tp.MasterLanguage], targetDir + @"\" + tp.Name + ".resx");
 			foreach (var l in tp.Languages)
 			{
 				if (l == tp.MasterLanguage) continue; //we skip master language since we treated it already as a special case
@@ -127,7 +127,7 @@ namespace TranslationTool.IO
 				else
 					segments = Segment.EmptyFromTemplate(byLanguage[tp.MasterLanguage]);
 
-				ToResX(segments, targetDir + tp.Name + "." + l + ".resx");
+				ToResX(segments, targetDir + @"\" + tp.Name + "." + l + ".resx");
 			}
 		}
 
