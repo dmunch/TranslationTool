@@ -47,6 +47,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="TMX14\tmx14.xsd">
       <SubType>Designer</SubType>
     </None>
