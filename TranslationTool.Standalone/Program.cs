@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System;
 using System.Linq;
 
-using System.Collections.Generic;
-using System.Xml.Serialization;
-
-using TranslationTool.IO;
-using Google.Apis.Drive.v2.Data;
 using CommandLine;
 using CommandLine.Text;
+
+using Google.Apis.Drive.v2;
+using Google.Apis.Drive.v2.Data;
 
 namespace TranslationTool.Standalone
 {
@@ -36,8 +30,12 @@ namespace TranslationTool.Standalone
 
 
 			[Option('n', "multiSpreadsheet", 
-			  HelpText = "Use the names of the spreadsheets in the file as the module name. Otherwise only one spreadsheet is accepted which has to be called 'Translations'")]
+			  HelpText = "Use the names of the spreadsheets in the file as the module name. Otherwise only the first spreadsheet is processed.")]
 			public bool MultiSpreadsheet { get; set; }
+
+			[Option('m', "moduleName",
+			  HelpText = "Name of the output RESX file in case only the first spreadsheet is processed. If option -n is used only export this specific module.")]
+			public string ModuleName { get; set; }
 
 			/*
 			[Option('f', "file", MutuallyExclusiveSet = "file",
@@ -63,12 +61,15 @@ namespace TranslationTool.Standalone
 			var options = new Options();
 			
 			if (CommandLine.Parser.Default.ParseArguments(args, options))
-			{		
+			{
+				//var drive = new IO.Google.Drive2(IO.Google.Drive.GetServiceAccountService());
+				var drive = new IO.Google.Drive2(IO.Google.Drive.GetService());
+				
 				File spreadsheet = null;
 				if (options.GDriveFolder != null)
 				{
-					var folder = TranslationTool.IO.Google.Drive.FindFolder(options.GDriveFolder);
-					var spreadsheets = IO.Google.Drive.FindSpreadsheetFiles(folder);
+					var folder = drive.FindFolder(options.GDriveFolder);
+					var spreadsheets = drive.FindSpreadsheetFiles(folder);
 
 					if (options.Verbose)
 					{
@@ -84,7 +85,7 @@ namespace TranslationTool.Standalone
 				}
 				else
 				{
-					spreadsheet = TranslationTool.IO.Google.Drive.FindSpreadsheetFile(options.FileName);
+					spreadsheet = drive.FindSpreadsheetFile(options.FileName);
 				}
 
 				if (spreadsheet == null)
@@ -92,27 +93,36 @@ namespace TranslationTool.Standalone
 					Console.WriteLine("Module {0} not found. Returning.", options.FileName);
 				}
 				
-				var xlsx = IO.Google.Drive.DownloadFile(spreadsheet, true);
+				var xlsx = drive.DownloadFile(spreadsheet, true);
 
 				if(!options.MultiSpreadsheet)
 				{
 					var project = IO.XlsX.FromXLSX(options.FileName, "en", xlsx);
-					IO.ResX.ToResX(project, options.ResXDir);
+					IO.ResX.ToResX(project, options.ResXDir, options.ModuleName);
 				}
 				else
 				{
 					var projects = IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);
 
-					foreach (var project in projects.Projects)
+					if (options.ModuleName == null)
 					{
+						//If no moduleName is specified, export all sheets
+						foreach (var project in projects.Projects.Where(p => !p.Key.StartsWith("_")))
+						{							
+							IO.ResX.ToResX(project.Value, options.ResXDir);
+						}
+					}
+					else
+					{
+						//A module was specified, only export this one
+						var project = projects.Projects.Where(p => p.Key == options.ModuleName).Single();
 						IO.ResX.ToResX(project.Value, options.ResXDir);
 					}
 				}
 			}
 		
 		}
-		
-		
+				
 		static void UploadAllToGdocs(string directory, File folder)
 		{
 			var t = IO.Collection.ResX.FromResX(directory, "en");
@@ -129,6 +139,6 @@ namespace TranslationTool.Standalone
 				Console.WriteLine("Done");
 			}
 			return;
-		}
+		}		
 	}
 }

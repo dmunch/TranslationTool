@@ -113,10 +113,12 @@ namespace TranslationTool.IO
 			return stringDict;
 		}
 
-		public static void ToResX(TranslationModule tp, string targetDir)
+		public static void ToResX(TranslationModule tp, string targetDir, string moduleName = null)
 		{
 			var byLanguage = tp.ByLanguage;
-			ToResX(byLanguage[tp.MasterLanguage], targetDir + @"\" + tp.Name + ".resx");
+			moduleName = moduleName ?? tp.Name;
+
+			ToResX(byLanguage[tp.MasterLanguage], targetDir + @"\" + moduleName + ".resx");
 			foreach (var l in tp.Languages)
 			{
 				if (l == tp.MasterLanguage) continue; //we skip master language since we treated it already as a special case
@@ -127,7 +129,10 @@ namespace TranslationTool.IO
 				else
 					segments = Segment.EmptyFromTemplate(byLanguage[tp.MasterLanguage]);
 
-				ToResX(segments, targetDir + @"\" + tp.Name + "." + l + ".resx");
+				if (segments.Count() > 0) 
+				{
+					ToResX(segments, targetDir + @"\" + moduleName + "." + l + ".resx");
+				}
 			}
 		}
 
