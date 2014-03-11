@@ -22,7 +22,7 @@ namespace TranslationTool.IO
 			using (var package = new OfficeOpenXml.ExcelPackage())
 			{
 				package.Load(stream);
-				var worksheet = package.Workbook.Worksheets["Traductions"];
+				var worksheet = package.Workbook.Worksheets[1];
 				return Export.FromIWorksheet(project, masterLanguage, new XlsXWorksheet(worksheet));
 			}
 		}
