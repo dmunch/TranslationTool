@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Google.Apis.Drive.v2.Data;
+using TranslationTool;
 
 namespace TranslationTool.Lib
 {
@@ -21,7 +22,7 @@ namespace TranslationTool.Lib
 		public void Download(string googleDriveFolderName, string localFolderName)
 		{
 			//var drive = new IO.Google.Drive2(IO.Google.Drive.GetServiceAccountService());
-			var drive = new IO.Google.Drive2(IO.Google.Drive.GetService());
+			var drive = new TranslationTool.IO.Google.Drive2(TranslationTool.IO.Google.Drive.GetServiceAccountCredential());
 			
 			var folder = drive.FindFolder(googleDriveFolderName);
 			var spreadsheets = drive.FindSpreadsheetFiles(folder);
@@ -31,9 +32,6 @@ namespace TranslationTool.Lib
 			{
 				Console.WriteLine("Downloading {0}...", spreadsheet.Title);
 				files.Add(spreadsheet, drive.DownloadFile(spreadsheet, true));
-
-				//sleep a second
-				System.Threading.Thread.Sleep(5000);
 			}
 
 			IEnumerable<TranslationModule> modules;
@@ -57,23 +55,19 @@ namespace TranslationTool.Lib
 			//Write modules to disk	
 			foreach(var module in modules)
 			{
-				IO.ResX.ToResX(module, localFolderName);
+				TranslationTool.IO.ResX.ToResX(module, localFolderName);
 			}
 		}
 
 		protected static IEnumerable<TranslationModule> FromMultiSpreadsheet(System.IO.Stream xlsx)
 		{
-			var projects = IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);
-
-			foreach (var project in projects.Projects.Where(p => !p.Key.StartsWith("_")))
-			{
-				yield return project.Value;
-			}
+			var projects = TranslationTool.IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);
+			return projects.Projects.Where(p => !p.Key.StartsWith("_")).Select(kvp => kvp.Value);
 		}
 
 		protected static TranslationModule FromFirstSpreadsheet(System.IO.Stream xlsx, string moduleName)
 		{
-			return IO.XlsX.FromXLSX(moduleName, "en", xlsx);			
+			return TranslationTool.IO.XlsX.FromXLSX(moduleName, "en", xlsx);			
 		}
 	}
 }
