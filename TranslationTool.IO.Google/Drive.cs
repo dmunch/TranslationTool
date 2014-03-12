@@ -1,25 +1,15 @@
-﻿using Google.Apis.Authentication.OAuth2;
-using Google.Apis.Authentication.OAuth2.DotNetOpenAuth;
-using Google.Apis.Drive.v2;
-using Google.Apis.Drive.v2.Data;
-using Google.GData.Spreadsheets;
-using Google.Apis.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Google.GData.Client;
-using Google.Apis.Auth.OAuth2;
-using System.Threading;
-using Google.Apis.Services;
-using Google.Apis.Auth.OAuth2.Flows;
-using Google.Apis.Util.Store;
-using System.Net;
-using Google.Apis.Authentication;
+using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v2;
+using Google.Apis.Drive.v2.Data;
 using Google.Apis.Http;
+using Google.Apis.Services;
 
 namespace TranslationTool.IO.Google
 {
@@ -47,18 +37,23 @@ namespace TranslationTool.IO.Google
 			}
 		}
 		public static DriveService GetService()
+		{			
+			return GetService(GetUserCredential());
+		}
+
+		public static UserCredential GetUserCredential()
 		{
 			GoogleWebAuthorizationBroker.Folder = "Drive.Sample";
 			UserCredential credential;
-			
-			using(var stream = ClientJson)
+
+			using (var stream = ClientJson)
 			//using (var stream = new System.IO.FileStream("client_secrets.json", System.IO.FileMode.Open, System.IO.FileAccess.Read))
 			{
 				var secrets = GoogleClientSecrets.Load(stream).Secrets;
 				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(secrets, new[] { DriveService.Scope.DriveFile, DriveService.Scope.Drive }, "user", CancellationToken.None).Result;
 			}
 
-			return GetService(credential);
+			return credential;
 		}
 
 		public static ServiceAccountCredential GetServiceAccountCredential()
@@ -80,7 +75,7 @@ namespace TranslationTool.IO.Google
 			return GetService(GetServiceAccountCredential());
 		}
 
-		protected static DriveService GetService(IConfigurableHttpClientInitializer credential)
+		internal static DriveService GetService(IConfigurableHttpClientInitializer credential)
 		{
 			var auth = new BaseClientService.Initializer()
 			{
@@ -88,8 +83,10 @@ namespace TranslationTool.IO.Google
 				ApplicationName = "Drive API Sample",
 			};
 			// Create the service.
+			
 			var driveService = new DriveService(auth);
-
+			//driveService.HttpClient.Timeout = new TimeSpan(0, 1, 0);
+			driveService.HttpClient.Timeout = new TimeSpan(0, 0, 10);
 			return driveService;
 		}			
 
@@ -185,8 +182,9 @@ namespace TranslationTool.IO.Google
 
 					using (var service = Drive.GetService())
 					{
-						var bytes = service.HttpClient.GetByteArrayAsync(downloadUrl).Result;
-						return new System.IO.MemoryStream(bytes);
+						//var bytes = service.HttpClient.GetByteArrayAsync(downloadUrl).Result;
+						return service.HttpClient.GetStreamAsync(downloadUrl).Result;
+						//return new System.IO.MemoryStream(bytes);
 					}					
 				}
 				catch (Exception e)
@@ -206,12 +204,37 @@ namespace TranslationTool.IO.Google
 
 	public class Drive2
 	{		
-		DriveService Service;
+		DriveService service;		
+		IHttpExecuteInterceptor credential;
 
-		public Drive2(DriveService service)
-		{
-			this.Service = service;
+		public Drive2(UserCredential credential)
+			: this(credential, credential)
+		{			
 		}
+		public Drive2(ServiceAccountCredential credential)
+			: this(credential, credential)
+		{			
+		}
+
+		protected Drive2(IConfigurableHttpClientInitializer credential, IHttpExecuteInterceptor credential2)
+		{
+			this.service = Drive.GetService(credential);
+			this.credential = credential2;			
+		}
+		
+		protected HttpClient GetHttpClient()
+		{
+			var httpClient = new HttpClientFactory().CreateHttpClient(new CreateHttpClientArgs
+			{
+				ApplicationName = "Downloader",
+			});
+
+			httpClient.MessageHandler.ExecuteInterceptors.Add(credential);
+			httpClient.Timeout = new TimeSpan(0, 0, 10);
+
+			return httpClient;
+		}
+
 
 		public void UploadXlsx(string name, string fileName, File folder = null)
 		{
@@ -231,7 +254,7 @@ namespace TranslationTool.IO.Google
 					file.Parents.Add(parRef);
 				}
 
-				var request = Service.Files.Insert(file, xlsStream, file.MimeType);
+				var request = service.Files.Insert(file, xlsStream, file.MimeType);
 
 				request.Convert = true;
 
@@ -241,7 +264,7 @@ namespace TranslationTool.IO.Google
 
 		public File FindFolder(string folderName)
 		{
-			var listRequest = Service.Files.List();
+			var listRequest = service.Files.List();
 			listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.folder' and title = '{0}'", folderName);
 
 			var result = listRequest.Execute();
@@ -251,7 +274,7 @@ namespace TranslationTool.IO.Google
 
 		public IList<File> FindSpreadsheetFiles(File folder)
 		{
-			var listRequest = Service.Files.List();
+			var listRequest = service.Files.List();
 			listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and '{0}' in parents and trashed = false", folder.Id);
 
 			var result = listRequest.Execute();
@@ -261,7 +284,7 @@ namespace TranslationTool.IO.Google
 
 		public File FindSpreadsheetFile(string name)
 		{
-			var listRequest = Service.Files.List();
+			var listRequest = service.Files.List();
 			listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and title = '{0}' and trashed = false", name);
 
 			var result = listRequest.Execute();
@@ -273,10 +296,20 @@ namespace TranslationTool.IO.Google
 		{
 
 			var downloadUrl = asXlsx ? file.ExportLinks["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] : file.DownloadUrl;
-
+		
 			if (!String.IsNullOrEmpty(downloadUrl))
 			{
-					return Service.HttpClient.GetStreamAsync(downloadUrl).Result;
+
+				//for each download we need a new httpClient, otherwise Google API will timeout
+				using (var httpClient = GetHttpClient())
+				{
+					//Can't use this, since stream gets unavailable once httpClient was disposed
+					//stream = httpClient.GetStreamAsync(downloadUrl).Result;
+
+					//so we get the bytes and construct the stream ourselfs
+					var bytes = service.HttpClient.GetByteArrayAsync(downloadUrl).Result;
+					return new System.IO.MemoryStream(bytes);
+				}
 			}
 			else
 			{

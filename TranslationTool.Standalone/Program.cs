@@ -63,7 +63,7 @@ namespace TranslationTool.Standalone
 			if (CommandLine.Parser.Default.ParseArguments(args, options))
 			{
 				//var drive = new IO.Google.Drive2(IO.Google.Drive.GetServiceAccountService());
-				var drive = new IO.Google.Drive2(IO.Google.Drive.GetService());
+				var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
 				
 				File spreadsheet = null;
 				if (options.GDriveFolder != null)
