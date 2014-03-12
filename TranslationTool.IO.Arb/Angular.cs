@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace TranslationTool.IO
 {
@@ -12,10 +13,10 @@ namespace TranslationTool.IO
 			
 			sb.AppendLine("app.config(function($translateProvider) {");
 
-			foreach (var l in tp.ByLanguage)
+			foreach (var language in tp.ByLanguage)
 			{
-				sb.AppendLine(string.Format(" $translateProvider.translations('{0}', {{", l.Key));
-				foreach (var segment in l)
+				sb.AppendLine(string.Format(" $translateProvider.translations('{0}', {{", language.Key));
+				foreach (var segment in language.Where(l => !string.IsNullOrWhiteSpace(l.Text)))
 				{
 					sb.Append("\"").Append(segment.Key).Append("\":\"").Append(segment.Text).AppendLine("\",");
 				}
