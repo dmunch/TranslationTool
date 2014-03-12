@@ -142,6 +142,24 @@ namespace TranslationTool
 			}
 		}
 
+		public void AddPrefix(string prefix)
+		{
+
+			foreach (var s in Segments)
+			{				
+				s.Text = prefix + ": " + s.Text;				
+			}
+		}
+
+		public void AddKeyNamePrefix()
+		{
+
+			foreach (var s in Segments)
+			{
+				s.Text = s.Key + ": " + s.Text;
+			}
+		}
+
 		public TranslationModuleDiff SyncWith(TranslationModule tp)
 		{
 			var diff = Diff(tp);

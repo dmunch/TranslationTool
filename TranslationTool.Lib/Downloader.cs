@@ -9,13 +9,13 @@ namespace TranslationTool.Lib
 {
 	public class Downloader
 	{
-		public bool AddKeyName { get; set; }
-		public bool AddModuleName { get; set; }
+		public bool PrefixKeyName { get; set; }
+		public bool PrefixModuleName { get; set; }
 		public bool UseMultiSpreadsheet { get; set; }
 		public Downloader()
 		{
-			AddKeyName = false;
-			AddModuleName = false;
+			PrefixKeyName = false;
+			PrefixModuleName = false;
 			UseMultiSpreadsheet = false;
 		}
 	
@@ -55,6 +55,16 @@ namespace TranslationTool.Lib
 			//Write modules to disk	
 			foreach(var module in modules)
 			{
+				if(this.PrefixKeyName)
+				{
+					module.AddKeyNamePrefix();
+				}
+
+				if (this.PrefixModuleName)
+				{
+					module.AddPrefix(module.Name);
+				}
+			
 				TranslationTool.IO.ResX.ToResX(module, localFolderName);
 			}
 		}
