@@ -119,6 +119,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TranslationTool.IO.Arb\TranslationTool.IO.Arb.csproj">
+      <Project>{FCAF3DF0-4994-4672-B0BC-7F95D434AA96}</Project>
+      <Name>TranslationTool.IO.Arb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TranslationTool.IO.Google\TranslationTool.IO.Google.csproj">
       <Project>{4EED5E90-B10C-46BC-A355-F267339D340B}</Project>
       <Name>TranslationTool.IO.Google</Name>
