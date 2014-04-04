@@ -12,6 +12,12 @@ namespace TranslationTool.Lib
 		public bool PrefixKeyName { get; set; }
 		public bool PrefixModuleName { get; set; }
 		public bool UseMultiSpreadsheet { get; set; }
+
+		/// <summary>
+		/// (resx, name, value) => return "toto";
+		/// </summary>
+		public Func<string, string, string, string> Formatter { get; set; }
+
 		public Downloader()
 		{
 			PrefixKeyName = false;
@@ -64,7 +70,12 @@ namespace TranslationTool.Lib
 				{
 					module.AddPrefix(module.Name);
 				}
-			
+
+				if (this.Formatter != null)
+				{
+					module.Format(this.Formatter);					
+				}
+
 				TranslationTool.IO.ResX.ToResX(module, localFolderName);
 			}
 		}

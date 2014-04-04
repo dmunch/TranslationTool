@@ -144,7 +144,6 @@ namespace TranslationTool
 
 		public void AddPrefix(string prefix)
 		{
-
 			foreach (var s in Segments)
 			{				
 				s.Text = prefix + ": " + s.Text;				
@@ -153,10 +152,17 @@ namespace TranslationTool
 
 		public void AddKeyNamePrefix()
 		{
-
 			foreach (var s in Segments)
 			{
 				s.Text = s.Key + ": " + s.Text;
+			}
+		}
+		
+		public void Format(Func<string, string, string, string> formatString)
+		{
+			foreach (var s in Segments)
+			{
+				s.Text = formatString(this.Name, s.Key, s.Text);
 			}
 		}
 
