@@ -39,6 +39,11 @@ namespace TranslationTool.IO
 		{
 			const string sOfficePath = @"C:\Program Files (x86)\LibreOffice 4.0\program\soffice.exe";
 
+			return ToXlsX(fileName, sOfficePath);
+		}
+
+		public static string ToXlsX(string fileName, string sOfficePath)
+		{
 			string arg = "--headless --convert-to xlsx " + fileName;
 
 			var p2 = new System.Diagnostics.Process();
@@ -51,7 +56,6 @@ namespace TranslationTool.IO
 			return p2.StartInfo.WorkingDirectory + @"\" + System.IO.Path.GetFileNameWithoutExtension(fileName) + ".xlsx";
 		}
 	}
-
 
 	public class XlsWorksheet : IWorksheet
 	{
