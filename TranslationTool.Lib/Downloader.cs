@@ -14,9 +14,9 @@ namespace TranslationTool.Lib
 		public bool UseMultiSpreadsheet { get; set; }
 
 		/// <summary>
-		/// (resx, name, value) => return "toto";
+		/// (url, resx, name, value) => return "toto";
 		/// </summary>
-		public Func<string, string, string, string> Formatter { get; set; }
+		public Func<string, string, string, string, string> Formatter { get; set; }
 
 		public Downloader()
 		{
@@ -40,19 +40,26 @@ namespace TranslationTool.Lib
 				files.Add(spreadsheet, drive.DownloadFile(spreadsheet, true));
 			}
 
-			IEnumerable<TranslationModule> modules;
-
+			Dictionary<File, TranslationModule> modules = new Dictionary<File, TranslationModule>();
 			if (UseMultiSpreadsheet)
 			{
-				modules = files.Values.SelectMany(file => FromMultiSpreadsheet(file));
+				foreach(var file in files)
+				{
+					foreach (var spreadsheet in FromMultiSpreadsheet(file.Value))
+						modules.Add(file.Key, spreadsheet);
+				}
+				//modules = files.Values.SelectMany(file => FromMultiSpreadsheet(file));
 			}
 			else
 			{
-				modules = files.Select(fileKvp => FromFirstSpreadsheet(fileKvp.Value, fileKvp.Key.Title));
+				foreach (var file in files)
+				{					
+					modules.Add(file.Key, FromFirstSpreadsheet(file.Value, file.Key.Title));
+				}				
 			}
 
 			//check if we've got duplicate module names which would result in conflicing file names
-			bool hasModuleNameDuplicates = modules.GroupBy(m => m.Name).Where(g => g.Skip(1).Any()).Any();
+			bool hasModuleNameDuplicates = modules.Values.GroupBy(m => m.Name).Where(g => g.Skip(1).Any()).Any();
 			if (hasModuleNameDuplicates)
 			{
 				throw new Exception("Module names aren't unique, did'nt write any files.");
@@ -63,20 +70,20 @@ namespace TranslationTool.Lib
 			{
 				if(this.PrefixKeyName)
 				{
-					module.AddKeyNamePrefix();
+					module.Value.AddKeyNamePrefix();
 				}
 
 				if (this.PrefixModuleName)
 				{
-					module.AddPrefix(module.Name);
+					module.Value.AddPrefix(module.Value.Name);
 				}
 
 				if (this.Formatter != null)
 				{
-					module.Format(this.Formatter);					
+					module.Value.Format((resx, name, value) => this.Formatter(module.Key.AlternateLink, resx, name, value));					
 				}
 
-				TranslationTool.IO.ResX.ToResX(module, localFolderName);
+				TranslationTool.IO.ResX.ToResX(module.Value, localFolderName);
 			}
 		}
 
