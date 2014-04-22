@@ -9,237 +9,140 @@ using Google.Apis.Drive.v2.Data;
 
 namespace TranslationTool.Standalone
 {
-	class Options
+	abstract class BaseOptions
 	{
-		[Option('r', "resxdir", DefaultValue = @"D:\Serveurs\Sites\iLucca\iLuccaEntities\Resources\",
-		  HelpText = "Location of ResX files")]
+		[Option('r', "resxdir", DefaultValue = @"D:\Serveurs\Sites\iLucca\iLuccaEntities\Resources\", HelpText = "Location of ResX files")]
 		public string ResXDir { get; set; }
+		
+		[Option('v', "verbose", Required = false, HelpText = "Be verbose")]
+		public bool Verbose { get; set; }
+	}
 
-		[Option('g', "gdrive", Required = false,
-		  HelpText = "Name of Google Drive folder for restricted search")]
-		public string GDriveFolder { get; set; }
-
-		[Option('f', "file", Required = false, MutuallyExclusiveSet = "folder",
-		  HelpText = "Name of file to download")]
-		public string FileName { get; set; }
-
-
-		[Option('n', "multiSpreadsheet",
-		  HelpText = "Use the names of the spreadsheets in the file as the module name. Otherwise only the first spreadsheet is processed.")]
-		public bool MultiSpreadsheet { get; set; }
-
-		[Option('m', "moduleName",
-		  HelpText = "Name of the RESX file. Used for upload or in case only the first spreadsheet is processed for download. If option -n is used only export this specific module.")]
-		public string ModuleName { get; set; }
-
-		[Option('u', "upload",
-			HelpText = "Upload to Gdoc instead of downloading.")]
-		public bool Upload { get; set;}
-
+	class UploadOptions : BaseOptions
+	{
 		[Option('s', "soffice",
 			HelpText = "Path to local SOffice installation used for upload.",
 			DefaultValue = @"C:\Program Files (x86)\LibreOffice 4.0\program\soffice.exe")]
 		public string SOfficePath { get; set; }
 
-		/*
-		[Option('f', "file", MutuallyExclusiveSet = "file",
-		  HelpText = "Name of module to download")]
+		[Option('b', "batch", 					
+			DefaultValue=false,
+			MutuallyExclusiveSet = "files")]
+		public bool Batch { get; set; }
+
+		[Option('m', "moduleName",			
+			HelpText = "Name of the RESX file. E.g. FIGGO in case of FIGGO.en.resx",
+			MutuallyExclusiveSet = "files")]
 		public string ModuleName { get; set; }
-		*/
 
-		[Option('v', "verbose", Required = false,
-		  HelpText = "BeVerbose")]
-		public bool Verbose { get; set; }
+		[Option('g', "gdrive",
+			Required = true,
+			HelpText = "Name of Google Drive folder for upload")]
+		public string GDriveFolder { get; set; }	}
 
-		[Option('a', "angular", Required = false, DefaultValue = false, HelpText = "Output files in Angular translate format instead of RESX")]
+	class DownloadOptions : BaseOptions
+	{
+		[Option('n', "multiSpreadsheet",  HelpText = "Use the names of the spreadsheets in the file as the module name. " +
+													 "Otherwise only the first spreadsheet is processed.")]
+		public bool MultiSpreadsheet { get; set; }
+
+		[Option('m', "moduleName",
+		  HelpText = "Name of the RESX file. Used in case only the first spreadsheet is processed for download. " +
+					 "If option -n is used only export this specific module.")]
+		public string ModuleName { get; set; }
+
+		[Option('f', "file", 
+			Required = true,
+			HelpText = "Name of file to download")]
+		public string FileName { get; set; }
+
+		[Option('g', "gdrive",
+			Required = false,
+			HelpText = "Name of Google Drive folder for restricted search")]
+		public string GDriveFolder { get; set; }
+
+		[Option('a', "angular", 
+			Required = false, 
+			DefaultValue = false,
+			HelpText = "Output files in Angular translate format instead of RESX")]
 		public bool Angular { get; set; }
+	}
 
-		[HelpOption]
-		public string GetUsage()
+	class Options
+	{				
+		public Options()
 		{
-			return HelpText.AutoBuild(this,
-			  (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
+			DownloadVerb = new DownloadOptions();
+			UploadVerb = new UploadOptions();
+		}
+
+		[VerbOption("upload", HelpText="upload translation files")]
+		public UploadOptions UploadVerb { get; set; }
+
+		[VerbOption("download", HelpText="download translation files")]
+		public DownloadOptions DownloadVerb { get; set; }
+
+		[HelpVerbOption]
+		public string GetUsage(string verb)
+		{
+			return HelpText.AutoBuild(this, verb);
 		}
 	}
 
 	class Program
-	{
-		static string testDir = @"D:\Users\login\Documents\i18n\XlsxTest";
-		static string resxDir = @"D:\Serveurs\Sites\iLucca\iLuccaEntities\Resources\";
-		
-		static void Main(string[] args)
+	{	
+		static int Main(string[] args)
 		{
 			var options = new Options();
+			string verb = "";
+
+			object subOptions = null;
+			var ps = new CommandLine.ParserSettings();
 			
-			if (CommandLine.Parser.Default.ParseArguments(args, options))
-			{
-				var main = new Main(options);
-				main.Run();
-			}
-		
-		}
-					
-		static void UploadAllToGdocs(string directory, File folder)
-		{
-			var t = IO.Collection.ResX.FromResX(directory, "en");
-			//TranslationTool.IO.Google.Tests.DriveTests.Upload(t.Projects["FIPLANNING"]);
+			CommandLine.Parser parser = new CommandLine.Parser(() => return new CommandLine.ParserSettings {
+							
+                            MutuallyExclusive = true,
+                            CaseSensitive = false,
+                            HelpWriter = Console.Error});
 
-			foreach (var file in IO.Collection.XlsCollection.ToDir(t, testDir))
-			{
-				Console.Write("Processing {0} ...", file.Value.Name);
-				//I know this looks stupid, but Google Docs would'nt accept our generated XlsX files. Hence we generate Xls files and convert
-				//them to XlsX files (using LibreOffice) as a workaround... 
-				string file2 = IO.Xls.ToXlsX(file.Key);
-				IO.Google.Drive.UploadXlsx(file.Value.Name, file2, folder);
-
-				Console.WriteLine("Done");
-			}
-			return;
-		}		
-	}
-
-	class Main
-	{
-		Options options;
-		public Main(Options options)
-		{
-			this.options = options;
-		}
-
-		public void Run()
-		{
-			//var drive = new IO.Google.Drive2(IO.Google.Drive.GetServiceAccountService());
-			var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
-
-			if (options.Upload)
-			{
-				Upload(options, drive);
-			}
-			else
-			{
-				Download(options, drive);
-			}
-		}
-		
-		protected void Upload(Options options, IO.Google.Drive2 drive)
-		{
-			if (string.IsNullOrWhiteSpace(options.ModuleName))
-			{
-				Console.WriteLine("No module name specified, batch upload all modules found in {0}", options.ResXDir);
-				UploadBatch(options, drive);
-
-				return;
-			}
-
-			Console.Write("Uploading {0} ...", options.ModuleName);
-
-			var folder = drive.FindFolder(options.GDriveFolder);
-
-			var t = IO.ResX.FromResX(options.ResXDir, options.ModuleName, "en");
+			parser = CommandLine.Parser.Default;
 			
-			string tempPath = System.IO.Path.GetTempPath();
-			string xlsFilename = System.IO.Path.Combine(tempPath, options.ModuleName + ".xls");
-			IO.Xls.ToXLS(t, xlsFilename);
-								
-			//I know this looks stupid, but Google Docs would'nt accept our generated XlsX files. 
-			//Hence we generate Xls files and convert them to XlsX files (using LibreOffice) as a workaround... 			
-			string xlsx = IO.Xls.ToXlsX(xlsFilename, options.SOfficePath);
-			IO.Google.Drive.UploadXlsx(options.ModuleName, xlsx, folder);
-
-			Console.WriteLine("Done");			
-		}
-
-		protected void UploadBatch(Options options, IO.Google.Drive2 drive)
-		{
-			var folder = drive.FindFolder(options.GDriveFolder);
-
-			var t = IO.Collection.ResX.FromResX(options.ResXDir, "en");			
-			string tempPath = System.IO.Path.GetTempPath();
-
-			foreach (var file in IO.Collection.XlsCollection.ToDir(t, tempPath))
-			{
-				Console.Write("Uploading {0} ...", file.Value.Name);
-		
-				//I know this looks stupid, but Google Docs would'nt accept our generated XlsX files. 
-				//Hence we generate Xls files and convert them to XlsX files (using LibreOffice) as a workaround... 			
-				string file2 = IO.Xls.ToXlsX(file.Key, options.SOfficePath);
-				IO.Google.Drive.UploadXlsx(file.Value.Name, file2, folder);
-
-				Console.WriteLine("Done");
-			}
-			return;
-		}
-
-		protected void Download(Options options, IO.Google.Drive2 drive)
-		{
-			File spreadsheet = null;
-			if (options.GDriveFolder != null)
-			{
-				var folder = drive.FindFolder(options.GDriveFolder);
-				var spreadsheets = drive.FindSpreadsheetFiles(folder);
-
-				if (options.Verbose)
+			if (parser.ParseArguments(args, options, (_verb, _subOptions) =>
 				{
-					Console.WriteLine("Available modules in '{0}':", options.GDriveFolder);
-					foreach (var file in spreadsheets)
-					{
-						Console.WriteLine(file.Title);
-					}
-				}
-
-
-				spreadsheet = spreadsheets.SingleOrDefault(ss => ss.Title == options.FileName);
-			}
-			else
+					verb = _verb;
+					subOptions = _subOptions;
+				}))
 			{
-				spreadsheet = drive.FindSpreadsheetFile(options.FileName);
-			}
-
-			if (spreadsheet == null)
-			{
-				Console.WriteLine("Module {0} not found. Returning.", options.FileName);
-			}
-
-			var xlsx = drive.DownloadFile(spreadsheet, true);
-
-			if (!options.MultiSpreadsheet)
-			{
-				var project = IO.XlsX.FromXLSX(options.FileName, "en", xlsx);
-				project.Name = options.ModuleName;
-
-				ToOutputFormat(project);
-			}
-			else
-			{
-				var projects = IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);
-
-				if (options.ModuleName == null)
+				switch (verb)
 				{
-					//If no moduleName is specified, export all sheets
-					foreach (var project in projects.Projects.Where(p => !p.Key.StartsWith("_")))
-					{
-						ToOutputFormat(project.Value);
-					}
-				}
-				else
-				{
-					//A module was specified, only export this one
-					var project = projects.Projects.Where(p => p.Key == options.ModuleName).Single();
-					ToOutputFormat(project.Value);
+					case "upload":
+						{
+							var uploadOptions = subOptions as UploadOptions;
+
+							if (!uploadOptions.Batch && string.IsNullOrWhiteSpace(uploadOptions.ModuleName)) 
+							{
+								Console.Error.Write(options.GetUsage("upload"));
+								return -1;
+							}
+
+							var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
+							var uploader = new Uploader(drive);
+
+							uploader.Upload(uploadOptions);
+						}
+						break;
+					case "download":
+						{
+							var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
+							var downloader = new Downloader(drive);
+
+							downloader.Download(subOptions as DownloadOptions);
+						}
+						break;
 				}
 			}
-		}
 
-		protected void ToOutputFormat(TranslationModule module)
-		{
-			if (options.Angular)
-			{
-				IO.Angular.ToAngular(module, options.ResXDir);
-			}
-			else
-			{
-				IO.ResX.ToResX(module, options.ResXDir);
-			}
-		}
-	}
+			return 0;
+		}				
+	}	
 }

@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TranslationTool.Standalone</RootNamespace>
-    <AssemblyName>TranslationTool.Standalone</AssemblyName>
+    <AssemblyName>TranslationTool</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -115,8 +115,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Download.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Upload.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TranslationTool.IO.Arb\TranslationTool.IO.Arb.csproj">
