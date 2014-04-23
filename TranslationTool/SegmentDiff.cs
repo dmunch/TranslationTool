@@ -73,9 +73,8 @@ namespace TranslationTool
 			foreach (var kvp in Deleted)
 			{
 				var n = ContentSelector(Deleted[kvp.Key]);
-				var o = ContentSelector(Orig[kvp.Key]);
 
-				logger.WriteLine(string.Format("D: {0}, {1} ({2})", kvp.Key, n, o));
+				logger.WriteLine(string.Format("D: {0}, {1}", kvp.Key, n));
 				logger.WriteLine("<hr/>");
 			}
 		}
