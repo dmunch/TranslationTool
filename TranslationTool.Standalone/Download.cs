@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-
 namespace TranslationTool.Standalone
 {
 	class Downloader
@@ -16,7 +15,8 @@ namespace TranslationTool.Standalone
 			this.drive = drive;
 		}
 
-		public void Download(DownloadOptions options)
+
+		public System.IO.Stream DownloadXlsx(BaseDownloadOptions options)
 		{
 			File spreadsheet = null;
 			if (options.GDriveFolder != null)
@@ -46,7 +46,12 @@ namespace TranslationTool.Standalone
 				Console.WriteLine("Module {0} not found. Returning.", options.FileName);
 			}
 
-			var xlsx = drive.DownloadFile(spreadsheet, true);
+			return drive.DownloadFile(spreadsheet, true);	
+		}
+
+		public void Download(DownloadOptions options)
+		{
+			var xlsx = DownloadXlsx(options);
 
 			if (!options.MultiSpreadsheet)
 			{
@@ -55,22 +60,21 @@ namespace TranslationTool.Standalone
 
 				ToOutputFormat(options, project);
 			}
-			else
+			else if (options.MultiSpreadsheet && options.ModuleName != null)
 			{
+				//A module was specified, only export this one
 				var projects = IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);
+				var project = projects.Projects.Where(p => p.Key == options.ModuleName).Single();
 
-				if (options.ModuleName == null)
+				ToOutputFormat(options, project.Value);
+			}
+			else if (options.MultiSpreadsheet && options.ModuleName == null)
+			{
+				//If no moduleName is specified, export all sheets
+
+				var projects = IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);				
+				foreach (var project in projects.Projects.Where(p => !p.Key.StartsWith("_")))
 				{
-					//If no moduleName is specified, export all sheets
-					foreach (var project in projects.Projects.Where(p => !p.Key.StartsWith("_")))
-					{
-						ToOutputFormat(options, project.Value);
-					}
-				}
-				else
-				{
-					//A module was specified, only export this one
-					var project = projects.Projects.Where(p => p.Key == options.ModuleName).Single();
 					ToOutputFormat(options, project.Value);
 				}
 			}

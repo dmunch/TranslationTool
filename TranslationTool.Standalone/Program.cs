@@ -6,6 +6,7 @@ using CommandLine.Text;
 
 using Google.Apis.Drive.v2;
 using Google.Apis.Drive.v2.Data;
+using TranslationTool.Helpers;
 
 namespace TranslationTool.Standalone
 {
@@ -38,11 +39,12 @@ namespace TranslationTool.Standalone
 		[Option('g', "gdrive",
 			Required = true,
 			HelpText = "Name of Google Drive folder for upload")]
-		public string GDriveFolder { get; set; }	}
+		public string GDriveFolder { get; set; }	
+	}
 
-	class DownloadOptions : BaseOptions
+	class BaseDownloadOptions : BaseOptions
 	{
-		[Option('n', "multiSpreadsheet",  HelpText = "Use the names of the spreadsheets in the file as the module name. " +
+		[Option('n', "multiSpreadsheet", HelpText = "Use the names of the spreadsheets in the file as the module name. " +
 													 "Otherwise only the first spreadsheet is processed.")]
 		public bool MultiSpreadsheet { get; set; }
 
@@ -51,7 +53,7 @@ namespace TranslationTool.Standalone
 					 "If option -n is used only export this specific module.")]
 		public string ModuleName { get; set; }
 
-		[Option('f', "file", 
+		[Option('f', "file",
 			Required = true,
 			HelpText = "Name of file to download")]
 		public string FileName { get; set; }
@@ -60,12 +62,20 @@ namespace TranslationTool.Standalone
 			Required = false,
 			HelpText = "Name of Google Drive folder for restricted search")]
 		public string GDriveFolder { get; set; }
+		
+	}
 
+	class DownloadOptions : BaseDownloadOptions
+	{		
 		[Option('a', "angular", 
 			Required = false, 
 			DefaultValue = false,
 			HelpText = "Output files in Angular translate format instead of RESX")]
 		public bool Angular { get; set; }
+	}
+
+	class DiffOptions : BaseDownloadOptions
+	{
 	}
 
 	class Options
@@ -81,6 +91,9 @@ namespace TranslationTool.Standalone
 
 		[VerbOption("download", HelpText="download translation files")]
 		public DownloadOptions DownloadVerb { get; set; }
+
+		[VerbOption("diff", HelpText = "show difference between local file and online gdoc")]
+		public DiffOptions DiffVerb { get; set; }
 
 		[HelpVerbOption]
 		public string GetUsage(string verb)
@@ -99,7 +112,7 @@ namespace TranslationTool.Standalone
 			object subOptions = null;
 			var ps = new CommandLine.ParserSettings();
 			
-			CommandLine.Parser parser = new CommandLine.Parser(() => return new CommandLine.ParserSettings {
+			CommandLine.Parser parser = new CommandLine.Parser(new CommandLine.ParserSettings {
 							
                             MutuallyExclusive = true,
                             CaseSensitive = false,
@@ -119,7 +132,7 @@ namespace TranslationTool.Standalone
 						{
 							var uploadOptions = subOptions as UploadOptions;
 
-							if (!uploadOptions.Batch && string.IsNullOrWhiteSpace(uploadOptions.ModuleName)) 
+							if (!uploadOptions.Batch && string.IsNullOrWhiteSpace(uploadOptions.ModuleName))
 							{
 								Console.Error.Write(options.GetUsage("upload"));
 								return -1;
@@ -137,6 +150,28 @@ namespace TranslationTool.Standalone
 							var downloader = new Downloader(drive);
 
 							downloader.Download(subOptions as DownloadOptions);
+						}
+						break;
+					case "diff":
+						{
+							var diffOptions = subOptions as DiffOptions;
+							var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
+
+							var folder = drive.FindFolder(diffOptions.GDriveFolder);
+							TranslationModule localModule = IO.ResX.FromResX(diffOptions.ResXDir, diffOptions.ModuleName, "en");
+			
+							var downloader = new Downloader(drive);
+							var xlsx = downloader.DownloadXlsx(diffOptions);
+
+							var remoteModule = IO.XlsX.FromXLSX(diffOptions.FileName, "en", xlsx);
+							remoteModule.Name = diffOptions.ModuleName;
+
+							var htmlLogger = new HTMLConcatLogger();
+							remoteModule.Diff(localModule).Print(htmlLogger);
+							
+							var fileName = System.IO.Path.GetTempFileName() + ".html";
+							System.IO.File.WriteAllText(fileName, htmlLogger.HTML);
+							System.Diagnostics.Process.Start(fileName);
 						}
 						break;
 				}
