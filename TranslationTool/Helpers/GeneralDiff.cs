@@ -14,7 +14,7 @@ namespace TranslationTool.Helpers
 		public Dictionary<TKey, T> Deleted = new Dictionary<TKey, T>();
 
 		protected Func<T, TKey> KeySelector;
-		public Func<T, TContent> ContentSelector;
+		protected Func<T, TContent> ContentSelector;
 		protected Action<T, TContent> ContentSetter;
 		
 		protected Func<TContent, TContent, bool> IsModifiedComparer;
@@ -127,6 +127,7 @@ namespace TranslationTool.Helpers
 
 			foreach (var kvp in diff.Updated)
 			{
+				
 				ContentSetter(lookup[kvp.Key], ContentSelector(kvp.Value));
 			}
 		}

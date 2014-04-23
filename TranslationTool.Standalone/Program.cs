@@ -18,7 +18,7 @@ namespace TranslationTool.Standalone
 		[Option('v', "verbose", Required = false, HelpText = "Be verbose")]
 		public bool Verbose { get; set; }
 	}
-
+	
 	class UploadOptions : BaseOptions
 	{
 		[Option('s', "soffice",
@@ -76,6 +76,16 @@ namespace TranslationTool.Standalone
 
 	class DiffOptions : BaseDownloadOptions
 	{
+		[Option("html", Required = false, DefaultValue = false,
+			HelpText = "show diff as formatted HTML (opens in browser)")]
+		public bool HTML { get; set; }
+	}
+
+	class PatchOptions : BaseOptions
+	{
+		[Option('m', "moduleName",
+			HelpText = "Name of the RESX file. E.g. FIGGO in case of FIGGO.en.resx")]
+		public string ModuleName { get; set; }
 	}
 
 	class Options
@@ -94,6 +104,10 @@ namespace TranslationTool.Standalone
 
 		[VerbOption("diff", HelpText = "show difference between local file and online gdoc")]
 		public DiffOptions DiffVerb { get; set; }
+
+		[VerbOption("patch", HelpText = "patch local files with patch file from stdin")]
+		public PatchOptions PatchVerb { get; set; }
+
 
 		[HelpVerbOption]
 		public string GetUsage(string verb)
@@ -159,19 +173,52 @@ namespace TranslationTool.Standalone
 
 							var folder = drive.FindFolder(diffOptions.GDriveFolder);
 							TranslationModule localModule = IO.ResX.FromResX(diffOptions.ResXDir, diffOptions.ModuleName, "en");
-			
+
 							var downloader = new Downloader(drive);
 							var xlsx = downloader.DownloadXlsx(diffOptions);
 
 							var remoteModule = IO.XlsX.FromXLSX(diffOptions.FileName, "en", xlsx);
 							remoteModule.Name = diffOptions.ModuleName;
 
-							var htmlLogger = new HTMLConcatLogger();
-							remoteModule.Diff(localModule).Print(htmlLogger);
-							
-							var fileName = System.IO.Path.GetTempFileName() + ".html";
-							System.IO.File.WriteAllText(fileName, htmlLogger.HTML);
-							System.Diagnostics.Process.Start(fileName);
+
+							TranslationModuleDiff diff = localModule.Diff(remoteModule);
+
+							var diffJson = Newtonsoft.Json.JsonConvert.SerializeObject(diff, Newtonsoft.Json.Formatting.Indented);
+							Console.OutputEncoding = System.Text.Encoding.UTF8;
+							Console.Write(diffJson);
+
+							if(diffOptions.HTML)
+							{
+								var htmlLogger = new HTMLConcatLogger();
+								diff.Print(htmlLogger);
+								var fileName = System.IO.Path.GetTempFileName() + ".html";
+								System.IO.File.WriteAllText(fileName, htmlLogger.HTML);
+								System.Diagnostics.Process.Start(fileName);
+							}
+						}
+						break;
+					case "patch":
+						{
+							var patchOptions = subOptions as PatchOptions;
+
+							//read patch data from stdin
+							Console.InputEncoding = System.Text.Encoding.UTF8;							
+							var jsonReader = new System.Text.StringBuilder();
+							string s;
+							while ((s = Console.ReadLine()) != null)
+							{
+								jsonReader.AppendLine(s);
+							}
+							string json = jsonReader.ToString();
+
+							//string json = System.IO.File.ReadAllText(@".\diff");							
+							var diff = Newtonsoft.Json.JsonConvert.DeserializeObject<TranslationModuleDiff>(json);
+
+							TranslationModule localModule = IO.ResX.FromResX(patchOptions.ResXDir, patchOptions.ModuleName, "en");
+							localModule.Patch(diff);
+
+							IO.ResX.ToResX(localModule, patchOptions.ResXDir);
+
 						}
 						break;
 				}

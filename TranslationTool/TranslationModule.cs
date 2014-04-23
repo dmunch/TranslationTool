@@ -194,7 +194,7 @@ namespace TranslationTool
 				allSync.Add(l, DictDiff.Diff(Dicts[l], tp.Dicts[l]));
 			}
 			*/
-			return new TranslationModuleDiff(this, allSync);
+			return new TranslationModuleDiff(allSync);
 		}
 
 		public void Patch(TranslationModuleDiff tpDiff)

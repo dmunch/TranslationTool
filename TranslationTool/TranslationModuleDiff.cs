@@ -3,12 +3,11 @@ using TranslationTool.Helpers;
 
 namespace TranslationTool
 {
-	public class TranslationModuleDiff : TranslationModuleBase
+	public class TranslationModuleDiff
 	{
-		public Dictionary<string, SegmentDiff> DiffPerLanguage { get; protected set; }
+		public Dictionary<string, SegmentDiff> DiffPerLanguage { get; set; }
 
-		public TranslationModuleDiff(TranslationModuleBase other, Dictionary<string, SegmentDiff> _diffPerLanguage)
-			: base(other)
+		public TranslationModuleDiff(Dictionary<string, SegmentDiff> _diffPerLanguage)
 		{
 			this.DiffPerLanguage = _diffPerLanguage;
 		}

@@ -12,6 +12,10 @@ namespace TranslationTool
 		public string Text { get; set; }
 		public string Comment { get; set; }
 
+		public Segment()
+		{
+		}
+
 		public Segment(string lang, string t)
 		{
 			this.Language = lang;

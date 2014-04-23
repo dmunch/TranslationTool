@@ -12,6 +12,11 @@ namespace TranslationTool
 		public string Name { get; set; }
 		public DateTime LastModified { get; set; }
 
+		public TranslationModuleBase()
+		{
+
+		}
+
 		public TranslationModuleBase(TranslationModuleBase other)
 		{
 			this.MasterLanguage = other.MasterLanguage;
