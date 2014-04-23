@@ -11,6 +11,7 @@ namespace TranslationTool.Helpers
 		public Dictionary<TKey, T> Orig = new Dictionary<TKey, T>();
 		public Dictionary<TKey, T> Updated = new Dictionary<TKey, T>();
 		public Dictionary<TKey, T> New = new Dictionary<TKey, T>();
+		public Dictionary<TKey, T> Deleted = new Dictionary<TKey, T>();
 
 		protected Func<T, TKey> KeySelector;
 		public Func<T, TContent> ContentSelector;
@@ -39,6 +40,7 @@ namespace TranslationTool.Helpers
 			this.Orig.Clear();
 			this.Updated.Clear();
 			this.New.Clear();
+			this.Deleted.Clear();
 
 			var dict1 = list1.ToDictionary(KeySelector);
 			var dict2 = list2.ToDictionary(KeySelector);
@@ -68,6 +70,15 @@ namespace TranslationTool.Helpers
 				if (!dict1.ContainsKey(kvp.Key))
 				{
 					New.Add(kvp.Key, kvp.Value);
+				}
+			}
+
+			//check deleted keys  
+			foreach (var kvp in dict1)
+			{
+				if (!dict2.ContainsKey(kvp.Key))
+				{
+					Deleted.Add(kvp.Key, kvp.Value);
 				}
 			}
 		}
