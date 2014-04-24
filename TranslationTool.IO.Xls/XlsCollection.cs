@@ -7,15 +7,17 @@ namespace TranslationTool.IO.Collection
 {
 	public class XlsCollection
 	{
-		public static IEnumerable<KeyValuePair<string, TranslationModule>> ToDir(TranslationProject tpc, string targetDir)
+		public static IEnumerable<KeyValuePair<string, ITranslationModule>> ToDir(ITranslationProject tpc, string targetDir)
 		{
-			Dictionary<string, TranslationModule> fileNames = new Dictionary<string, TranslationModule>();
-			foreach (var kvp in tpc.Projects)
+			Dictionary<string, ITranslationModule> fileNames = new Dictionary<string, ITranslationModule>();
+			foreach (var moduleName in tpc.ModuleNames)
 			{
-				var fileName = targetDir + @"\" + kvp.Key + ".xls";
-				IO.Xls.ToXLS(kvp.Value, fileName);
+				var module = tpc[moduleName];
 
-				fileNames.Add(fileName, kvp.Value);
+				var fileName = targetDir + @"\" + moduleName + ".xls";
+				IO.Xls.ToXLS(module, fileName);
+
+				fileNames.Add(fileName, module);
 			}
 
 			return fileNames;

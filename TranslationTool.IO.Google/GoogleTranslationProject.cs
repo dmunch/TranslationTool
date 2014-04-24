@@ -117,7 +117,7 @@ namespace TranslationTool.IO.Provider.Google
 			get { return this.ModuleFileCache.Keys; }
 		}
 
-		public IEnumerable<TranslationModule> Modules
+		public IEnumerable<ITranslationModule> Modules
 		{
 			get 
 			{
@@ -136,7 +136,7 @@ namespace TranslationTool.IO.Provider.Google
 			}
 		}
 
-		public TranslationModule this[string moduleName]
+		public ITranslationModule this[string moduleName]
 		{
 			get 
 			{
@@ -156,7 +156,7 @@ namespace TranslationTool.IO.Provider.Google
 			}
 		}
 
-		public void Add(TranslationModule module)
+		public void Add(ITranslationModule module)
 		{
 			throw new NotImplementedException();
 		}

@@ -71,16 +71,27 @@ namespace TranslationTool
 			}
 		}
 
-		public TranslationModule(string project, string masterLanguage)
-			: base(project, masterLanguage)
+		public TranslationModule(string name, string masterLanguage)
+			: base(name, masterLanguage)
 		{
 			this._Segments = new List<Segment>();
 		}
 
-		public TranslationModule(string project, string masterLanguage, string[] languages)
-			: base(project, masterLanguage, languages)
+		public TranslationModule(string name, string masterLanguage, string[] languages)
+			: base(name, masterLanguage, languages)
 		{
 			this._Segments = new List<Segment>();
+		}
+		
+		public TranslationModule(ITranslationModule other)
+			: base(other)
+		{						
+		}
+
+		public TranslationModule(ITranslationModule other, IEnumerable<Segment> segments)
+			: base(other)
+		{
+			this._Segments = segments.ToList();
 		}
 
 		public void Add(Segment s)
@@ -166,7 +177,7 @@ namespace TranslationTool
 			}
 		}
 
-		public TranslationModuleDiff SyncWith(TranslationModule tp)
+		public TranslationModuleDiff SyncWith(ITranslationModule tp)
 		{
 			var diff = Diff(tp);
 			Patch(diff);
@@ -174,7 +185,7 @@ namespace TranslationTool
 			return diff;
 		}
 
-		public TranslationModuleDiff Diff(TranslationModule tp)
+		public TranslationModuleDiff Diff(ITranslationModule tp)
 		{
 			var allSync = new Dictionary<string, SegmentDiff>();
 

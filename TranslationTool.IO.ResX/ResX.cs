@@ -21,7 +21,7 @@ namespace TranslationTool.IO
 			this.MasterLanguage = masterLanguage;
 		}
 
-		public TranslationModule this[string moduleName]
+		public ITranslationModule this[string moduleName]
 		{
 			get
 			{
@@ -45,7 +45,7 @@ namespace TranslationTool.IO
 		}
 
 		public IEnumerable<string> ModuleNames { get; set; }
-		public IEnumerable<TranslationModule> Modules
+		public IEnumerable<ITranslationModule> Modules
 		{
 			get
 			{
@@ -53,7 +53,7 @@ namespace TranslationTool.IO
 			}
 		}
 
-		public void Add(TranslationModule module)
+		public void Add(ITranslationModule module)
 		{
 			throw new NotImplementedException();
 		}
@@ -113,7 +113,7 @@ namespace TranslationTool.IO
 			return stringDict;
 		}
 
-		public static void ToResX(TranslationModule tp, string targetDir, string moduleName = null)
+		public static void ToResX(ITranslationModule tp, string targetDir, string moduleName = null)
 		{
 			var byLanguage = tp.ByLanguage;
 			moduleName = moduleName ?? tp.Name;

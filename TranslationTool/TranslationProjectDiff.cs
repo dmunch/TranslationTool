@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TranslationTool
 {
-	public class TranslationProjectDiff : GeneralDiff<TranslationModule, string, System.DateTime>
+	public class TranslationProjectDiff : GeneralDiff<ITranslationModule, string, System.DateTime>
 	{
 		public IDictionary<string, TranslationModuleDiff> DiffPerModule { get; protected set; }
 

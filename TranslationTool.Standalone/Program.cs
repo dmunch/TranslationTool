@@ -172,7 +172,7 @@ namespace TranslationTool.Standalone
 							var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
 
 							var folder = drive.FindFolder(diffOptions.GDriveFolder);
-							TranslationModule localModule = IO.ResX.FromResX(diffOptions.ResXDir, diffOptions.ModuleName, "en");
+							ITranslationModule localModule = IO.ResX.FromResX(diffOptions.ResXDir, diffOptions.ModuleName, "en");
 
 							var downloader = new Downloader(drive);
 							var xlsx = downloader.DownloadXlsx(diffOptions);

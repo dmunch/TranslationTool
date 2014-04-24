@@ -79,8 +79,8 @@ namespace TranslationTool.Standalone
 				}
 			}
 		}
-
-		protected void ToOutputFormat(DownloadOptions options, TranslationModule module)
+		
+		protected void ToOutputFormat(DownloadOptions options, ITranslationModule module)
 		{
 			if (options.Angular)
 			{

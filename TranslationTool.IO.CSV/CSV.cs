@@ -79,7 +79,7 @@ namespace TranslationTool.IO
 			return tp;
 		}
 
-		public static void ToCSV(TranslationModule project, string targetDir)
+		public static void ToCSV(ITranslationModule project, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
 			ToCSV(project, sb, true);
@@ -90,7 +90,7 @@ namespace TranslationTool.IO
 			}
 		}
 
-		public static void ToCSV(TranslationModule project, StringBuilder sb, bool addHeader = true)
+		public static void ToCSV(ITranslationModule project, StringBuilder sb, bool addHeader = true)
 		{
 			if (addHeader)
 			{

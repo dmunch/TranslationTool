@@ -8,10 +8,10 @@ namespace TranslationTool
 	public interface ITranslationProject
 	{
 		IEnumerable<string> ModuleNames { get; }
-		IEnumerable<TranslationModule> Modules { get; }
+		IEnumerable<ITranslationModule> Modules { get; }
 
-		TranslationModule this[string moduleName] { get; }
-		void Add(TranslationModule module);
+		ITranslationModule this[string moduleName] { get; }
+		void Add(ITranslationModule module);
 
 		void SyncWith(ITranslationProject other);
 	}

@@ -5,7 +5,7 @@ namespace TranslationTool
 {	
     public class TranslationProject : ITranslationProject
     {
-		public Dictionary<string, TranslationModule> Projects { get; set; }
+		public Dictionary<string, ITranslationModule> Projects { get; set; }
 		public IEnumerable<string> ModuleNames
 		{
 			get
@@ -14,7 +14,7 @@ namespace TranslationTool
 			}
 		}
 
-		public IEnumerable<TranslationModule> Modules
+		public IEnumerable<ITranslationModule> Modules
 		{
 			get
 			{
@@ -22,15 +22,20 @@ namespace TranslationTool
 			}
 		}
 
-		public TranslationProject(Dictionary<string, TranslationModule> dict)
+		public TranslationProject(Dictionary<string, ITranslationModule> dict)
 		{
 			this.Projects = dict;
 		}
 
         public TranslationProject()
         {
-            this.Projects = new Dictionary<string, TranslationModule>();
+            this.Projects = new Dictionary<string, ITranslationModule>();
         }
+
+		public TranslationProject(IEnumerable<ITranslationModule> modules)			
+		{
+			this.Projects = modules.ToDictionary(m => m.Name, m => m);
+		}
 
 		public void SyncWith(ITranslationProject other)
         {
@@ -54,12 +59,12 @@ namespace TranslationTool
 					yield return tm.Diff(other[tm.Name]);
 		}
 
-		public TranslationModule this[string moduleName]
+		public ITranslationModule this[string moduleName]
 		{
 			get { return Projects.ContainsKey(moduleName) ? Projects[moduleName] : null; }
 		}
 
-		public void Add(TranslationModule module)
+		public void Add(ITranslationModule module)
 		{
 			Projects.Add(module.Name, module);
 		}

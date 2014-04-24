@@ -17,16 +17,17 @@ namespace TranslationTool.IO.Collection
 			return tpc;
 		}
 
-		public void ToCSV(TranslationProject tpc, string targetDir)
+		public void ToCSV(ITranslationProject tpc, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
 			string fileName = "";
-			foreach (var kvp in tpc.Projects)
+			foreach (var moduleName in tpc.ModuleNames)
 			{
-				sb.Append("ns:").AppendLine(kvp.Key);
-				IO.CSV.ToCSV(kvp.Value, sb, false);
+				var module = tpc[moduleName];
+				sb.Append("ns:").AppendLine(moduleName);
+				IO.CSV.ToCSV(module, sb, false);
 
-				fileName += "_" + kvp.Key;
+				fileName += "_" + moduleName;
 			}
 
 			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + fileName + ".csv", false, Encoding.UTF8))

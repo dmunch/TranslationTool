@@ -46,7 +46,7 @@ namespace TranslationTool.Lib
 				foreach(var file in files)
 				{
 					foreach (var spreadsheet in FromMultiSpreadsheet(file.Value))
-						modules.Add(file.Key, spreadsheet);
+						modules.Add(file.Key, new TranslationModule(spreadsheet));
 				}
 				//modules = files.Values.SelectMany(file => FromMultiSpreadsheet(file));
 			}
@@ -87,7 +87,7 @@ namespace TranslationTool.Lib
 			}
 		}
 
-		protected static IEnumerable<TranslationModule> FromMultiSpreadsheet(System.IO.Stream xlsx)
+		protected static IEnumerable<ITranslationModule> FromMultiSpreadsheet(System.IO.Stream xlsx)
 		{
 			var projects = TranslationTool.IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);
 			return projects.Projects.Where(p => !p.Key.StartsWith("_")).Select(kvp => kvp.Value);

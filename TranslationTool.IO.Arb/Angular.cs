@@ -7,7 +7,7 @@ namespace TranslationTool.IO
 {
 	public class Angular
 	{
-		public static void ToAngular(TranslationModule tp, string targetDir)
+		public static void ToAngular(ITranslationModule tp, string targetDir)
 		{
 			StringBuilder sb = new StringBuilder();
 			

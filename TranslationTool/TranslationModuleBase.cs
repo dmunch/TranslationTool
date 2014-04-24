@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TranslationTool
 {
-	public class TranslationModuleBase
+	public class TranslationModuleBase : ITranslationModuleBase
 	{
 		public IEnumerable<string> Languages { get; protected set; }
 		public string MasterLanguage { get; protected set; }
@@ -17,7 +17,7 @@ namespace TranslationTool
 
 		}
 
-		public TranslationModuleBase(TranslationModuleBase other)
+		public TranslationModuleBase(ITranslationModuleBase other)
 		{
 			this.MasterLanguage = other.MasterLanguage;
 			this.Languages = other.Languages;

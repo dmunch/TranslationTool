@@ -79,7 +79,7 @@ namespace TranslationTool.IO
 			return tp;
 		}
 
-		public static int ToIWorksheet(TranslationModule project, IWorksheet worksheet, int rowStart = 0)
+		public static int ToIWorksheet(ITranslationModule project, IWorksheet worksheet, int rowStart = 0)
 			{
 				int columnCounter = 0;
 				int rowCounter = rowStart;
