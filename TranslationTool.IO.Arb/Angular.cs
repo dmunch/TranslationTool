@@ -18,11 +18,11 @@ namespace TranslationTool.IO
 				sb.AppendLine(string.Format(" $translateProvider.translations('{0}', {{", language.Key));
 				foreach (var segment in language.Where(l => !string.IsNullOrWhiteSpace(l.Text)))
 				{
-					sb.Append("\"").Append(segment.Key).Append("\":\"").Append(segment.Text).AppendLine("\",");
+					sb.Append("'").Append(segment.Key).Append("':'").Append(segment.Text).AppendLine("',");
 				}
-				sb.AppendLine("},");
+				sb.AppendLine("});");
 			}
-			sb.AppendLine("}");
+			sb.AppendLine("});");
 
 			using (StreamWriter outfile = new StreamWriter(targetDir + @"\" + tp.Name + ".lang.js", false, Encoding.UTF8))
 			{
