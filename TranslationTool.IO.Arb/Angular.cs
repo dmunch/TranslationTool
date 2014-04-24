@@ -18,7 +18,10 @@ namespace TranslationTool.IO
 				sb.AppendLine(string.Format(" $translateProvider.translations('{0}', {{", language.Key));
 				foreach (var segment in language.Where(l => !string.IsNullOrWhiteSpace(l.Text)))
 				{
-					sb.Append("'").Append(segment.Key).Append("':'").Append(segment.Text).AppendLine("',");
+					var text = segment.Text;
+
+					text = text.Replace("'", "\\'"); 
+					sb.Append("'").Append(segment.Key).Append("':'").Append(text).AppendLine("',");
 				}
 				sb.AppendLine("});");
 			}
