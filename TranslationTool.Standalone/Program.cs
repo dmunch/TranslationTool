@@ -7,6 +7,7 @@ using CommandLine.Text;
 using Google.Apis.Drive.v2;
 using Google.Apis.Drive.v2.Data;
 using TranslationTool.Helpers;
+using System.Collections.Generic;
 
 namespace TranslationTool.Standalone
 {
@@ -53,7 +54,12 @@ namespace TranslationTool.Standalone
 					 "If option -n is used only export this specific module.")]
 		public string ModuleName { get; set; }
 
-		[Option('f', "file",
+		[OptionList('t', "tags",
+			HelpText = "Filter by tags. Tags are given in gdoc file by a special line before a block, starting with the hash-bang: #js",
+			DefaultValue = null)]
+		public IList<string> Tags { get; set; }
+
+ 		[Option('f', "file",
 			Required = true,
 			HelpText = "Name of file to download")]
 		public string FileName { get; set; }
@@ -84,6 +90,7 @@ namespace TranslationTool.Standalone
 	class PatchOptions : BaseOptions
 	{
 		[Option('m', "moduleName",
+			Required = true,
 			HelpText = "Name of the RESX file. E.g. FIGGO in case of FIGGO.en.resx")]
 		public string ModuleName { get; set; }
 	}
@@ -177,9 +184,10 @@ namespace TranslationTool.Standalone
 							var downloader = new Downloader(drive);
 							var xlsx = downloader.DownloadXlsx(diffOptions);
 
-							var remoteModule = IO.XlsX.FromXLSX(diffOptions.FileName, "en", xlsx);
-							remoteModule.Name = diffOptions.ModuleName;
+							var _remoteModule = IO.XlsX.FromXLSX(diffOptions.FileName, "en", xlsx);
+							_remoteModule.Name = diffOptions.ModuleName;
 
+							ITranslationModule remoteModule = _remoteModule.FilterByTags(diffOptions.Tags);
 
 							TranslationModuleDiff diff = localModule.Diff(remoteModule);
 

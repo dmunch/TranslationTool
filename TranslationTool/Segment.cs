@@ -11,17 +11,22 @@ namespace TranslationTool
 		public string Key { get; set; }
 		public string Text { get; set; }
 		public string Comment { get; set; }
+		public IEnumerable<string> Tags { get; set; }
 
 		public Segment()
 		{
+			Tags = Enumerable.Empty<string>();
 		}
 
 		public Segment(string lang, string t)
+			: this()
 		{
 			this.Language = lang;
 			this.Text = t;
 		}
+
 		public Segment(string lang, string key, string t)
+			:this()
 		{
 			this.Language = lang;
 			this.Text = t;
@@ -29,15 +34,19 @@ namespace TranslationTool
 		}
 
 		public Segment(Segment other)
+			:this()
 		{
 			this.Language = other.Language;
 			this.Text = other.Text;
 			this.Key = other.Key;
+			this.Tags = other.Tags;
 		}
+
 		public override string ToString()
 		{
 			return "(" + Language + ") " + Key + ": " + Text;
 		}
+
 		public static IEnumerable<Segment> FromDict(string language, IDictionary<string, string> dict)
 		{
 			foreach (var kvp in dict)

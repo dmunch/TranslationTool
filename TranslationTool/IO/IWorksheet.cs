@@ -27,6 +27,7 @@ namespace TranslationTool.IO
 			Dictionary<int, string> languages = new Dictionary<int, string>();
 			
 			string currentNS = project;
+			IEnumerable<string> labels = Enumerable.Empty<string>();
 			int commentColumn = -1;
 
 			for (int c = 1; c < worksheet.Columns; c++)
@@ -44,13 +45,23 @@ namespace TranslationTool.IO
 
 			for (int r = 1; r < worksheet.Rows; r++)
 			{
-				string key = (string)worksheet[r, 0];
+				string key = ((string)worksheet[r, 0]);
 				if (string.IsNullOrWhiteSpace(key)) continue;
 
+				key = key.Trim();
+				bool isSpecialColumn = false;
 				if (key.Contains("ns:"))
+				{				
 					currentNS = key.Split(':')[1];
-
-				if (currentNS == project && !key.Contains("ns:"))
+					isSpecialColumn = true;
+				}
+				if (key.StartsWith("#"))
+				{
+					isSpecialColumn = true;
+					labels = key.Split(',').Select(label => label.Trim());
+				}
+						
+				if (currentNS == project && !isSpecialColumn)
 				{
 					if (string.IsNullOrWhiteSpace(key) && createMissingKeys)
 					{
@@ -61,7 +72,10 @@ namespace TranslationTool.IO
 					{
 						for (int c = 1; c < languages.Count + 1; c++)
 						{
-							tp.Add(new Segment(languages[c], key, (string)worksheet[r, c]));
+							var segment = new Segment(languages[c], key, (string)worksheet[r, c]);
+							segment.Tags = labels;
+
+							tp.Add(segment);
 							/*
 							if (c != commentColumn)
 							{

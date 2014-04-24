@@ -55,6 +55,20 @@ namespace TranslationTool
 
 			return key;
 		}
+
+
+		public static TranslationProject FilterByTags(this TranslationProject project, IEnumerable<string> tags)
+		{
+			return new TranslationProject(project.Modules.Select(module => FilterByTags(module, tags)));
+		}
+
+		public static ITranslationModule FilterByTags(this ITranslationModule module, IEnumerable<string> tags)
+		{
+			if (tags == null) return module;
+
+			IEnumerable<Segment> filteredSegments = module.Segments.Where(s => s.Tags.Any(label => tags.Contains(label)));
+			return new TranslationModule(module, filteredSegments);
+		}
 	}
 	
 	public class TranslationModule : TranslationModuleBase, TranslationTool.ITranslationModule

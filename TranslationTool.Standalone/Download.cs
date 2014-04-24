@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TranslationTool;
 
 namespace TranslationTool.Standalone
 {
@@ -64,9 +65,9 @@ namespace TranslationTool.Standalone
 			{
 				//A module was specified, only export this one
 				var projects = IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);
-				var project = projects.Projects.Where(p => p.Key == options.ModuleName).Single();
-
-				ToOutputFormat(options, project.Value);
+				var project = projects.Projects.Where(p => p.Key == options.ModuleName).Single().Value;
+				
+				ToOutputFormat(options, project.FilterByTags(options.Tags));
 			}
 			else if (options.MultiSpreadsheet && options.ModuleName == null)
 			{
@@ -75,7 +76,7 @@ namespace TranslationTool.Standalone
 				var projects = IO.Collection.XlsX.FromMultiSpreadsheet("en", xlsx);				
 				foreach (var project in projects.Projects.Where(p => !p.Key.StartsWith("_")))
 				{
-					ToOutputFormat(options, project.Value);
+					ToOutputFormat(options, project.Value.FilterByTags(options.Tags));
 				}
 			}
 		}
