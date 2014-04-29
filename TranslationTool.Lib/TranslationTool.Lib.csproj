@@ -128,6 +128,7 @@
   <ItemGroup>
     <Compile Include="Downloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceAccountApplication.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

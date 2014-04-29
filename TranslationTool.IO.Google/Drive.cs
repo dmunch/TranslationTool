@@ -18,51 +18,20 @@ namespace TranslationTool.IO.Google
 		string ApplicationName { get; }
 	}
 
-	public class UserCredentialApplication : IApplication
+	public interface IUserCredentialApplication : IApplication
 	{
-		public string ApplicationName { get; protected set;}
-
-		public System.IO.Stream ClientJson
-		{
-			get
-			{
-				return Assembly.GetCallingAssembly().GetManifestResourceStream("TranslationTool.IO.Google.Secrets.client_secrets.json");
-			}
-		}
-
-		public UserCredentialApplication()
-		{
-			ApplicationName = "Lucca TMS";
-		}
+		System.IO.Stream ClientJson { get; }
 	}
 
-	public class ServiceAccountApplication : IApplication
+	public interface IServiceAccountApplication : IApplication
 	{
-		public string ApplicationName { get; protected set; }
-
-		public byte[] PrivateKey
-		{
-			get
-			{
-				var stream = Assembly.GetCallingAssembly().GetManifestResourceStream("TranslationTool.IO.Google.ServiceAccountPrivateKey.p12");
-				using (var br = new System.IO.BinaryReader(stream))
-				{
-					return br.ReadBytes((int)stream.Length);
-				}
-			}
-		}
-
-		public string ServiceAccountMail = "249650506594-3dcgpm1qve3pmbblo1js6o7t8ebhckol@developer.gserviceaccount.com";
-
-		public ServiceAccountApplication()
-		{
-			ApplicationName = "Lucca TMS";
-		}
+		byte[] PrivateKey { get; }
+		string ServiceAccountMail { get; }
 	}
-
+	
 	public class DriveCredentialsService
 	{			
-		public static UserCredential GetUserCredential(UserCredentialApplication ucApp)
+		public static UserCredential GetUserCredential(IUserCredentialApplication ucApp)
 		{
 			GoogleWebAuthorizationBroker.Folder = "Drive.Sample";
 			UserCredential credential;
@@ -76,7 +45,7 @@ namespace TranslationTool.IO.Google
 			return credential;
 		}
 
-		public static ServiceAccountCredential GetServiceAccountCredential(ServiceAccountApplication saApp)
+		public static ServiceAccountCredential GetServiceAccountCredential(IServiceAccountApplication saApp)
 		{
 			var certificate = new X509Certificate2(saApp.PrivateKey, "notasecret", X509KeyStorageFlags.Exportable);
 			ServiceAccountCredential credential = new ServiceAccountCredential(
@@ -103,12 +72,12 @@ namespace TranslationTool.IO.Google
 			return driveService;
 		}
 
-		public static DriveService GetService(UserCredentialApplication ucApp)
+		public static DriveService GetService(IUserCredentialApplication ucApp)
 		{
 			return GetService(GetUserCredential(ucApp), ucApp);
 		}
 
-		public static DriveService GetService(ServiceAccountApplication saApp)
+		public static DriveService GetService(IServiceAccountApplication saApp)
 		{
 			return GetService(GetServiceAccountCredential(saApp), saApp);
 		}
@@ -120,7 +89,7 @@ namespace TranslationTool.IO.Google
 		IHttpExecuteInterceptor credential;
 		IApplication application;
 
-		public Drive(UserCredentialApplication ucApp)
+		public Drive(IUserCredentialApplication ucApp)
 		{
 			credential = DriveCredentialsService.GetUserCredential(ucApp);
 			service = DriveCredentialsService.GetService(ucApp);
@@ -128,30 +97,13 @@ namespace TranslationTool.IO.Google
 			application = ucApp;
 		}
 
-		public Drive(ServiceAccountApplication saApp)
+		public Drive(IServiceAccountApplication saApp)
 		{
 			credential = DriveCredentialsService.GetServiceAccountCredential(saApp);
 			service = DriveCredentialsService.GetService(saApp);
 
 			application = saApp;
 		}
-
-		/*
-		public Drive(UserCredential credential)
-			: this(credential, credential)
-		{			
-		}
-		public Drive(ServiceAccountCredential credential)
-			: this(credential, credential)
-		{			
-		}
-
-		protected Drive(IConfigurableHttpClientInitializer credential, IHttpExecuteInterceptor credential2)
-		{
-			this.service = DriveCredentialsService.GetService(credential);
-			this.credential = credential2;			
-		}
-		*/
 
 		protected HttpClient GetHttpClient()
 		{
@@ -165,7 +117,6 @@ namespace TranslationTool.IO.Google
 
 			return httpClient;
 		}
-
 
 		public void UploadXlsx(string name, string fileName, File folder = null)
 		{

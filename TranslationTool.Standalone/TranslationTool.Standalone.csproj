@@ -115,6 +115,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auth\ServiceAccountApplication.cs" />
+    <Compile Include="Auth\UserCredentialApplication.cs" />
     <Compile Include="Download.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

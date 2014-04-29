@@ -12,11 +12,12 @@ namespace TranslationTool.IO.Provider.Google
 	{
 		Dictionary<string, TranslationModule> Cache;
 		Dictionary<string, File> ModuleFileCache;
+		Drive drive;
 
 		string CachingDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\GoogleTranslationProjectCache";
 		string GDriveFolder;
 
-		public GoogleTranslationProject(string gDriveFolder = "Visual Studio Translations")
+		public GoogleTranslationProject(Drive drive, string gDriveFolder = "Visual Studio Translations")
 		{
 			this.GDriveFolder = gDriveFolder;
 			
@@ -50,8 +51,7 @@ namespace TranslationTool.IO.Provider.Google
 		protected IEnumerable<File> UpdateFiles()
 		{
 			ILogging logging = this.Logging ?? new ConsoleLogging();
-
-			var drive = new Drive(new ServiceAccountApplication());
+			
 			var folder = drive.FindFolder(this.GDriveFolder);
 			var files = drive.FindSpreadsheetFiles(folder).Where(file => !(file.ExplicitlyTrashed ?? false));
 
@@ -100,8 +100,7 @@ namespace TranslationTool.IO.Provider.Google
 		}
 
 		protected void DownloadFile(File file)
-		{
-			var drive = new Drive(new ServiceAccountApplication());
+		{			
 			var memStream = drive.DownloadFile(file, true);
 			var fileName = GetLocalFileName(file);
 

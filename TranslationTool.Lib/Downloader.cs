@@ -26,9 +26,8 @@ namespace TranslationTool.Lib
 		}
 	
 		public void Download(string googleDriveFolderName, string localFolderName)
-		{
-			//var drive = new IO.Google.Drive2(IO.Google.Drive.GetServiceAccountService());
-			var drive = new TranslationTool.IO.Google.Drive(new TranslationTool.IO.Google.ServiceAccountApplication());
+		{			
+			var drive = new TranslationTool.IO.Google.Drive(new Auth.ServiceAccountApplication());
 			
 			var folder = drive.FindFolder(googleDriveFolderName);
 			var spreadsheets = drive.FindSpreadsheetFiles(folder);

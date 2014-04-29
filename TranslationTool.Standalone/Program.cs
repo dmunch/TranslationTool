@@ -8,6 +8,7 @@ using Google.Apis.Drive.v2;
 using Google.Apis.Drive.v2.Data;
 using TranslationTool.Helpers;
 using System.Collections.Generic;
+using TranslationTool.IO.Google;
 
 namespace TranslationTool.Standalone
 {
@@ -134,7 +135,9 @@ namespace TranslationTool.Standalone
 
 			object subOptions = null;
 			var ps = new CommandLine.ParserSettings();
-			
+
+			IUserCredentialApplication credential = new Auth.UserCredentialApplicationFromFile();
+
 			CommandLine.Parser parser = new CommandLine.Parser(new CommandLine.ParserSettings {
 							
                             MutuallyExclusive = true,
@@ -163,7 +166,7 @@ namespace TranslationTool.Standalone
 								return -1;
 							}
 
-							var drive = new IO.Google.Drive(new IO.Google.UserCredentialApplication());
+							var drive = new IO.Google.Drive(credential);
 							var uploader = new Uploader(drive);
 
 							uploader.Upload(uploadOptions);
@@ -171,7 +174,7 @@ namespace TranslationTool.Standalone
 						break;
 					case "download":
 						{
-							var drive = new IO.Google.Drive(new IO.Google.UserCredentialApplication());
+							var drive = new IO.Google.Drive(credential);
 							var downloader = new Downloader(drive);
 
 							downloader.Download(subOptions as DownloadOptions);
@@ -180,7 +183,7 @@ namespace TranslationTool.Standalone
 					case "diff":
 						{
 							var diffOptions = subOptions as DiffOptions;
-							var drive = new IO.Google.Drive(new IO.Google.UserCredentialApplication());
+							var drive = new IO.Google.Drive(credential);
 
 							var folder = drive.FindFolder(diffOptions.GDriveFolder);
 							ITranslationModule localModule = IO.ResX.FromResX(diffOptions.ResXDir, diffOptions.ModuleName, "en");
