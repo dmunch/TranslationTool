@@ -4,6 +4,8 @@ using Google.Apis.Drive.v2.Data;
 using Google.GData.Client;
 using Google.GData.Spreadsheets;
 
+#if false 
+
 namespace TranslationTool.IO.Google.Tests
 {
 	class SpreadsheetsTests
@@ -155,3 +157,4 @@ namespace TranslationTool.IO.Google.Tests
 		}
 	}
 }
+#endif

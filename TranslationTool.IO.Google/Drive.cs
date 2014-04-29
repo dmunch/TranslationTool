@@ -13,19 +13,34 @@ using Google.Apis.Services;
 
 namespace TranslationTool.IO.Google
 {
-	public class Drive
+	public interface IApplication
 	{
-		public static string ApplicationName = "Lucca TMS";
+		string ApplicationName { get; }
+	}
 
-		public static System.IO.Stream ClientJson
+	public class UserCredentialApplication : IApplication
+	{
+		public string ApplicationName { get; protected set;}
+
+		public System.IO.Stream ClientJson
 		{
 			get
 			{
-				return Assembly.GetCallingAssembly().GetManifestResourceStream("TranslationTool.IO.Google.client_secrets.json");
+				return Assembly.GetCallingAssembly().GetManifestResourceStream("TranslationTool.IO.Google.Secrets.client_secrets.json");
 			}
 		}
 
-		public static byte[] PrivateKey
+		public UserCredentialApplication()
+		{
+			ApplicationName = "Lucca TMS";
+		}
+	}
+
+	public class ServiceAccountApplication : IApplication
+	{
+		public string ApplicationName { get; protected set; }
+
+		public byte[] PrivateKey
 		{
 			get
 			{
@@ -36,18 +51,23 @@ namespace TranslationTool.IO.Google
 				}
 			}
 		}
-		public static DriveService GetService()
-		{			
-			return GetService(GetUserCredential());
-		}
 
-		public static UserCredential GetUserCredential()
+		public string ServiceAccountMail = "249650506594-3dcgpm1qve3pmbblo1js6o7t8ebhckol@developer.gserviceaccount.com";
+
+		public ServiceAccountApplication()
+		{
+			ApplicationName = "Lucca TMS";
+		}
+	}
+
+	public class DriveCredentialsService
+	{			
+		public static UserCredential GetUserCredential(UserCredentialApplication ucApp)
 		{
 			GoogleWebAuthorizationBroker.Folder = "Drive.Sample";
 			UserCredential credential;
 
-			using (var stream = ClientJson)
-			//using (var stream = new System.IO.FileStream("client_secrets.json", System.IO.FileMode.Open, System.IO.FileAccess.Read))
+			using (var stream = ucApp.ClientJson)			
 			{
 				var secrets = GoogleClientSecrets.Load(stream).Secrets;
 				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(secrets, new[] { DriveService.Scope.DriveFile, DriveService.Scope.Drive }, "user", CancellationToken.None).Result;
@@ -56,13 +76,11 @@ namespace TranslationTool.IO.Google
 			return credential;
 		}
 
-		public static ServiceAccountCredential GetServiceAccountCredential()
+		public static ServiceAccountCredential GetServiceAccountCredential(ServiceAccountApplication saApp)
 		{
-			String serviceAccountEmail = "249650506594-3dcgpm1qve3pmbblo1js6o7t8ebhckol@developer.gserviceaccount.com";
-
-			var certificate = new X509Certificate2(PrivateKey, "notasecret", X509KeyStorageFlags.Exportable);
+			var certificate = new X509Certificate2(saApp.PrivateKey, "notasecret", X509KeyStorageFlags.Exportable);
 			ServiceAccountCredential credential = new ServiceAccountCredential(
-			   new ServiceAccountCredential.Initializer(serviceAccountEmail)
+			   new ServiceAccountCredential.Initializer(saApp.ServiceAccountMail)
 			   {
 				   Scopes = new[] { DriveService.Scope.DriveFile, DriveService.Scope.Drive }
 			   }.FromCertificate(certificate));
@@ -70,17 +88,12 @@ namespace TranslationTool.IO.Google
 			return credential;
 		}
 		
-		public static DriveService GetServiceAccountService()
-		{			
-			return GetService(GetServiceAccountCredential());
-		}
-
-		internal static DriveService GetService(IConfigurableHttpClientInitializer credential)
+		internal static DriveService GetService(IConfigurableHttpClientInitializer credential, IApplication app)
 		{
 			var auth = new BaseClientService.Initializer()
 			{
 				HttpClientInitializer = credential,
-				ApplicationName = "Drive API Sample",
+				ApplicationName = app.ApplicationName,
 			};
 			// Create the service.
 			
@@ -88,140 +101,58 @@ namespace TranslationTool.IO.Google
 			//driveService.HttpClient.Timeout = new TimeSpan(0, 1, 0);
 			driveService.HttpClient.Timeout = new TimeSpan(0, 0, 10);
 			return driveService;
-		}			
-
-		public static void UploadXlsx(string name, string fileName, File folder = null)
-		{
-			using (System.IO.FileStream xlsStream = new System.IO.FileStream(fileName, System.IO.FileMode.Open))
-			{
-				var driveService = Drive.GetService();
-
-				var file = new File();
-
-				file.Title = name;
-				file.Description = string.Format("Created via {0} at {1}", Drive.ApplicationName, DateTime.Now.ToString());
-				file.MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-				if (folder != null)
-				{
-					var parRef = new ParentReference();
-					parRef.Id = folder.Id;
-					file.Parents = new List<ParentReference>();
-					file.Parents.Add(parRef);
-				}
-
-				var request = driveService.Files.Insert(file, xlsStream, file.MimeType);
-
-				request.Convert = true;
-				
-				var r = request.UploadAsync().Result;
-			}
-		}		
-
-		public static File FindFolder(string folderName)
-		{
-			using (var service = Drive.GetService())
-			{
-				var listRequest = service.Files.List();
-				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.folder' and title = '{0}'", folderName);
-
-				var result = listRequest.Execute();
-				
-				return result.Items.First();
-			}
 		}
 
-		public static IList<File> FindSpreadsheetFiles(File folder)
+		public static DriveService GetService(UserCredentialApplication ucApp)
 		{
-			using (var service = Drive.GetService())
-			{
-				var listRequest = service.Files.List();
-				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and '{0}' in parents and trashed = false", folder.Id);
-
-				var result = listRequest.Execute();
-
-				return result.Items;
-			}
+			return GetService(GetUserCredential(ucApp), ucApp);
 		}
 
-		public static File FindSpreadsheetFile(string name)
+		public static DriveService GetService(ServiceAccountApplication saApp)
 		{
-			using (var service = Drive.GetService())
-			{
-				var listRequest = service.Files.List();
-				listRequest.Q = String.Format("mimeType = 'application/vnd.google-apps.spreadsheet' and title = '{0}' and trashed = false", name);
-
-				var result = listRequest.Execute();
-
-				return result.Items.First();
-			}
+			return GetService(GetServiceAccountCredential(saApp), saApp);
 		}
-			
-		public static System.IO.Stream DownloadFile(File file, bool asXlsx = true)
-		{
-			
-			var downloadUrl = asXlsx ? file.ExportLinks["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] : file.DownloadUrl;
+	}
 
-			if (!String.IsNullOrEmpty(downloadUrl))
-			{
-				try
-				{
-					//HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new Uri(downloadUrl));
-					//authenticator.ApplyAuthenticationToRequest(request);
-					/*
-					var request = Spreadsheets.GetRequestFactory().CreateRequest(GDataRequestType.Query, new Uri(downloadUrl));
-					request.Execute();
-					
-					var responseStream = request.GetResponseStream();
-					var memStream = new System.IO.MemoryStream();
-					responseStream.CopyTo(memStream);
-		
-					memStream.Seek(0, System.IO.SeekOrigin.Begin);
-					return memStream;
-					*/
-
-					using (var service = Drive.GetService())
-					{
-						//var bytes = service.HttpClient.GetByteArrayAsync(downloadUrl).Result;
-						return service.HttpClient.GetStreamAsync(downloadUrl).Result;
-						//return new System.IO.MemoryStream(bytes);
-					}					
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine("An error occurred: " + e.Message);
-					return null;
-				}
-			}
-			else
-			{
-				// The file doesn't have any content stored on Drive.
-				return null;
-			}
-
-		}
-    }
-
-	public class Drive2
+	public class Drive
 	{		
 		DriveService service;		
 		IHttpExecuteInterceptor credential;
+		IApplication application;
 
-		public Drive2(UserCredential credential)
-			: this(credential, credential)
-		{			
-		}
-		public Drive2(ServiceAccountCredential credential)
-			: this(credential, credential)
-		{			
-		}
-
-		protected Drive2(IConfigurableHttpClientInitializer credential, IHttpExecuteInterceptor credential2)
+		public Drive(UserCredentialApplication ucApp)
 		{
-			this.service = Drive.GetService(credential);
+			credential = DriveCredentialsService.GetUserCredential(ucApp);
+			service = DriveCredentialsService.GetService(ucApp);
+
+			application = ucApp;
+		}
+
+		public Drive(ServiceAccountApplication saApp)
+		{
+			credential = DriveCredentialsService.GetServiceAccountCredential(saApp);
+			service = DriveCredentialsService.GetService(saApp);
+
+			application = saApp;
+		}
+
+		/*
+		public Drive(UserCredential credential)
+			: this(credential, credential)
+		{			
+		}
+		public Drive(ServiceAccountCredential credential)
+			: this(credential, credential)
+		{			
+		}
+
+		protected Drive(IConfigurableHttpClientInitializer credential, IHttpExecuteInterceptor credential2)
+		{
+			this.service = DriveCredentialsService.GetService(credential);
 			this.credential = credential2;			
 		}
-		
+		*/
+
 		protected HttpClient GetHttpClient()
 		{
 			var httpClient = new HttpClientFactory().CreateHttpClient(new CreateHttpClientArgs
@@ -243,7 +174,7 @@ namespace TranslationTool.IO.Google
 				var file = new File();
 
 				file.Title = name;
-				file.Description = string.Format("Created via {0} at {1}", Drive.ApplicationName, DateTime.Now.ToString());
+				file.Description = string.Format("Created via {0} at {1}", application.ApplicationName, DateTime.Now.ToString());
 				file.MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 				if (folder != null)

@@ -129,17 +129,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Drive.cs" />
-    <Compile Include="GDataSpreadSheet.cs" />
+    <Compile Include="Old\GDataSpreadSheet.cs" />
     <Compile Include="GoogleTranslationProject.cs" />
     <Compile Include="GoogleWorksheet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Spreadsheets.cs" />
+    <Compile Include="Old\Spreadsheets.cs" />
     <Compile Include="Tests\DriveTests.cs" />
     <Compile Include="Tests\SpreadsheetsTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="client_secrets.json" />
-    <EmbeddedResource Include="ServiceAccountPrivateKey.p12" />
+    <EmbeddedResource Include="Secrets\client_secrets.json" />
+    <EmbeddedResource Include="Secrets\ServiceAccountPrivateKey.p12" />
     <None Include="app.config" />
     <None Include="Key.snk" />
     <None Include="packages.config" />

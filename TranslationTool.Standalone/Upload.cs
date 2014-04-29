@@ -4,8 +4,8 @@ namespace TranslationTool.Standalone
 {
 	class Uploader
 	{
-		IO.Google.Drive2 drive;
-		public Uploader(IO.Google.Drive2 drive)
+		IO.Google.Drive drive;
+		public Uploader(IO.Google.Drive drive)
 		{
 			this.drive = drive;
 		}
@@ -33,8 +33,8 @@ namespace TranslationTool.Standalone
 			//I know this looks stupid, but Google Docs would'nt accept our generated XlsX files. 
 			//Hence we generate Xls files and convert them to XlsX files (using LibreOffice) as a workaround... 			
 			string xlsx = IO.Xls.ToXlsX(xlsFilename, options.SOfficePath);
-			IO.Google.Drive.UploadXlsx(options.ModuleName, xlsx, folder);
-
+			drive.UploadXlsx(options.ModuleName, xlsx, folder);
+			
 			Console.WriteLine("Done");			
 		}
 
@@ -52,7 +52,7 @@ namespace TranslationTool.Standalone
 				//I know this looks stupid, but Google Docs would'nt accept our generated XlsX files. 
 				//Hence we generate Xls files and convert them to XlsX files (using LibreOffice) as a workaround... 			
 				string file2 = IO.Xls.ToXlsX(file.Key, options.SOfficePath);
-				IO.Google.Drive.UploadXlsx(file.Value.Name, file2, folder);
+				drive.UploadXlsx(file.Value.Name, file2, folder);
 
 				Console.WriteLine("Done");
 			}

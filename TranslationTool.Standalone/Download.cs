@@ -9,9 +9,9 @@ namespace TranslationTool.Standalone
 {
 	class Downloader
 	{
-		protected IO.Google.Drive2 drive;
+		protected IO.Google.Drive drive;
 
-		public Downloader(IO.Google.Drive2 drive)
+		public Downloader(IO.Google.Drive drive)
 		{
 			this.drive = drive;
 		}

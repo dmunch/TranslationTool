@@ -7,7 +7,7 @@ namespace TranslationTool.IO.Google.Tests
 	{
 		public static void Revision()
 		{
-			var driveService = Drive.GetService();
+			var driveService = DriveCredentialsService.GetService(new ServiceAccountApplication());
 			var t = driveService.Revisions.Get("test", "test").ExecuteAsync().Result;
 
 			var list = driveService.Files.List();
@@ -39,12 +39,13 @@ namespace TranslationTool.IO.Google.Tests
 			var xlsStream = SLExcelWriter.GenerateExcel();
 			xlsStream.Seek(0, System.IO.SeekOrigin.Begin);
 
-			var driveService = Drive.GetService();
+			var saApp = new ServiceAccountApplication();
+			var driveService = DriveCredentialsService.GetService(saApp);
 
 			var file = new File();
 
 			file.Title = tp.Name;
-			file.Description = string.Format("Created via {0} at {1}", Drive.ApplicationName, DateTime.Now.ToString());
+			file.Description = string.Format("Created via {0} at {1}", saApp.ApplicationName, DateTime.Now.ToString());
 			file.MimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 			//file.MimeType = "application/vnd.ms-excel";
 			//file.MimeType = "text/csv";

@@ -5,13 +5,15 @@ using Google.GData.Spreadsheets;
 using Microsoft.Win32;
 using System;
 
+#if false 
+
 namespace TranslationTool.IO.Google
 {
-	class Spreadsheets
+	class Spreadsheets1
 	{
 		public static SpreadsheetsService GetService()
-		{			
-			var spreadsheetsService = new SpreadsheetsService(Drive.ApplicationName);
+		{
+			var spreadsheetsService = new SpreadsheetsService(DriveCredentialsService.ApplicationName);
 			spreadsheetsService.RequestFactory = GetRequestFactory();
 
 			return spreadsheetsService;
@@ -29,8 +31,7 @@ namespace TranslationTool.IO.Google
 		{
 			OAuth2Parameters parameters = new OAuth2Parameters();
 
-			//using (var stream = new System.IO.FileStream("client_secrets.json", System.IO.FileMode.Open, System.IO.FileAccess.Read))
-			using(var stream = Drive.ClientJson)
+			using (var stream = DriveCredentialsService.ClientJson)
 			{
 				//https://developers.google.com/google-apps/spreadsheets/#authorizing_requests_with_oauth_20
 				//https://developers.google.com/accounts/docs/OAuth2InstalledApp
@@ -104,7 +105,8 @@ namespace TranslationTool.IO.Google
 				Authorize(parameters);
 			}
 			SaveSate(registryKey, parameters);
-			return new GOAuth2RequestFactory(null, Drive.ApplicationName, parameters);
+			return new GOAuth2RequestFactory(null, DriveCredentialsService.ApplicationName, parameters);
 		}
 	}
 }
+#endif

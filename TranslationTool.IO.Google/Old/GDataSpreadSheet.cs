@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Google.GData.Spreadsheets;
 using Google.GData.Client;
+#if false
 
 namespace TranslationTool.IO
 {
@@ -188,3 +189,4 @@ namespace TranslationTool.IO
 		}
 	}
 }
+#endif

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Google.Apis.Drive.v2.Data;
 using TranslationTool.Helpers;
+using TranslationTool.IO.Google;
 
 namespace TranslationTool.IO.Provider.Google
 {
@@ -50,8 +51,9 @@ namespace TranslationTool.IO.Provider.Google
 		{
 			ILogging logging = this.Logging ?? new ConsoleLogging();
 
-			var folder = IO.Google.Drive.FindFolder(this.GDriveFolder);
-			var files = IO.Google.Drive.FindSpreadsheetFiles(folder).Where(file => !(file.ExplicitlyTrashed ?? false));
+			var drive = new Drive(new ServiceAccountApplication());
+			var folder = drive.FindFolder(this.GDriveFolder);
+			var files = drive.FindSpreadsheetFiles(folder).Where(file => !(file.ExplicitlyTrashed ?? false));
 
 			var filesGroup = files.GroupBy(file => file.Title);
 
@@ -99,7 +101,8 @@ namespace TranslationTool.IO.Provider.Google
 
 		protected void DownloadFile(File file)
 		{
-			var memStream = IO.Google.Drive.DownloadFile(file, true);
+			var drive = new Drive(new ServiceAccountApplication());
+			var memStream = drive.DownloadFile(file, true);
 			var fileName = GetLocalFileName(file);
 
 			if(System.IO.File.Exists(fileName))

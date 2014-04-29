@@ -163,7 +163,7 @@ namespace TranslationTool.Standalone
 								return -1;
 							}
 
-							var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
+							var drive = new IO.Google.Drive(new IO.Google.UserCredentialApplication());
 							var uploader = new Uploader(drive);
 
 							uploader.Upload(uploadOptions);
@@ -171,7 +171,7 @@ namespace TranslationTool.Standalone
 						break;
 					case "download":
 						{
-							var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
+							var drive = new IO.Google.Drive(new IO.Google.UserCredentialApplication());
 							var downloader = new Downloader(drive);
 
 							downloader.Download(subOptions as DownloadOptions);
@@ -180,7 +180,7 @@ namespace TranslationTool.Standalone
 					case "diff":
 						{
 							var diffOptions = subOptions as DiffOptions;
-							var drive = new IO.Google.Drive2(IO.Google.Drive.GetUserCredential());
+							var drive = new IO.Google.Drive(new IO.Google.UserCredentialApplication());
 
 							var folder = drive.FindFolder(diffOptions.GDriveFolder);
 							ITranslationModule localModule = IO.ResX.FromResX(diffOptions.ResXDir, diffOptions.ModuleName, "en");
