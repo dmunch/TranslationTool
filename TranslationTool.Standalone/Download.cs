@@ -85,7 +85,7 @@ namespace TranslationTool.Standalone
 		{
 			if (options.Angular)
 			{
-				IO.Angular.ToAngular(module, options.ResXDir);
+				IO.Angular.ToAngular(module, options.ResXDir, options.CommandLine);
 			}
 			else
 			{

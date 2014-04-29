@@ -18,6 +18,8 @@ namespace TranslationTool.Standalone
 		
 		[Option('v', "verbose", Required = false, HelpText = "Be verbose")]
 		public bool Verbose { get; set; }
+
+		public string CommandLine { get; set; }
 	}
 	
 	class UploadOptions : BaseOptions
@@ -147,6 +149,8 @@ namespace TranslationTool.Standalone
 					subOptions = _subOptions;
 				}))
 			{
+				(subOptions as BaseOptions).CommandLine = string.Join(" ", args);
+
 				switch (verb)
 				{
 					case "upload":

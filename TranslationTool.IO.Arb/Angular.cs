@@ -7,10 +7,11 @@ namespace TranslationTool.IO
 {
 	public class Angular
 	{
-		public static void ToAngular(ITranslationModule tp, string targetDir)
+		public static void ToAngular(ITranslationModule tp, string targetDir, string firstRowComment = "")
 		{
 			StringBuilder sb = new StringBuilder();
-			
+
+			sb.Append("//").AppendLine(firstRowComment);
 			sb.AppendLine("app.config(function($translateProvider) {");
 
 			foreach (var language in tp.ByLanguage)
